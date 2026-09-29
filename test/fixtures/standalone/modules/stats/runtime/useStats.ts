@@ -1,3 +1,3 @@
 export function useStats() {
-  return { nodes: 0 }
+  return { nodes: 0 };
 }

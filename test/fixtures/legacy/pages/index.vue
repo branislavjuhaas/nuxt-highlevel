@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { todos } = useTodos()
+const { todos } = useTodos();
 </script>
 
 <template>

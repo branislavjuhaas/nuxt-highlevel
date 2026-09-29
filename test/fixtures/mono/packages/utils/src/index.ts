@@ -1,2 +1,2 @@
-export { formatPrice } from './format'
-export { sum } from './math'
+export { formatPrice } from "./format";
+export { sum } from "./math";

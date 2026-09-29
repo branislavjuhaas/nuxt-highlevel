@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const theme = useTheme()
+const theme = useTheme();
 </script>
 
 <template>

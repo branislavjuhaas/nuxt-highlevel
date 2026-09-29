@@ -10,13 +10,13 @@ nuxt-highlevel [root] [options]
 
 ## Arguments & Options
 
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `root` | Positional | `.` | Path to the Nuxt repository or monorepo to analyze. |
-| `--port` | String | `4777` | Preferred port for the web server (automatically scans range `4777–4877` if occupied). |
-| `--editor` | String | — | Preferred editor to open files in when clicking "Open in Editor" (e.g. `code`, `cursor`). |
-| `--open` / `--no-open` | Boolean | `true` | Automatically open the browser when the server starts (`--no-open` to skip). |
-| `--prepare` | Boolean | `false` | Automatically run `nuxi prepare` on Nuxt projects where `.nuxt/` is missing. |
+| Option                 | Type       | Default | Description                                                                               |
+| :--------------------- | :--------- | :------ | :---------------------------------------------------------------------------------------- |
+| `root`                 | Positional | `.`     | Path to the Nuxt repository or monorepo to analyze.                                       |
+| `--port`               | String     | `4777`  | Preferred port for the web server (automatically scans range `4777–4877` if occupied).    |
+| `--editor`             | String     | —       | Preferred editor to open files in when clicking "Open in Editor" (e.g. `code`, `cursor`). |
+| `--open` / `--no-open` | Boolean    | `true`  | Automatically open the browser when the server starts (`--no-open` to skip).              |
+| `--prepare`            | Boolean    | `false` | Automatically run `nuxi prepare` on Nuxt projects where `.nuxt/` is missing.              |
 
 ## Examples
 

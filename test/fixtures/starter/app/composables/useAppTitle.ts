@@ -1,3 +1,3 @@
 export function useAppTitle() {
-  return computed(() => capitalize(useRoute().name?.toString() ?? 'home'))
+  return computed(() => capitalize(useRoute().name?.toString() ?? "home"));
 }

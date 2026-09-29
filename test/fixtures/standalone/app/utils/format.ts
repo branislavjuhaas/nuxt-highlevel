@@ -1,3 +1,3 @@
 export function formatCount(count: number) {
-  return `${count} nodes`
+  return `${count} nodes`;
 }

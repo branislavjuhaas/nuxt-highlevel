@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ depth: number }>()
+defineProps<{ depth: number }>();
 </script>
 
 <template>

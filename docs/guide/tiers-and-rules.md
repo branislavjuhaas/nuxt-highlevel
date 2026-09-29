@@ -13,6 +13,7 @@ Every package in your repository is assigned to one of three default tiers:
 ## Default Rules
 
 Nuxt Highlevel enforces the following default architecture rules:
+
 - **`base` must not depend on `feature` or `app`**.
 - **`feature` must not depend on `app`**.
 
@@ -37,6 +38,7 @@ You can customize tiers and rules for your repository by adding a `nuxt-highleve
 ```
 
 ### How Matching Works
+
 - Globs are matched against the package path or package name using `picomatch`.
 - The first matching glob wins.
 - If no rules file is present, the built-in default tiers and rules are applied automatically.

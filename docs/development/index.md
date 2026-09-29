@@ -5,6 +5,7 @@ Want to contribute to Nuxt Highlevel or run it locally for development? This gui
 ## Getting Started
 
 1. Clone the repository and install dependencies:
+
    ```sh
    pnpm install
    ```
@@ -20,18 +21,18 @@ Want to contribute to Nuxt Highlevel or run it locally for development? This gui
 
 ## Available Scripts
 
-| Script | Description |
-| :--- | :--- |
-| `pnpm dev` | Start Nuxt development server for the UI and API. |
-| `pnpm build` | Build the application for production (`nuxt build`). |
-| `pnpm preview` | Preview the production build locally. |
-| `pnpm lint` | Run ESLint across the codebase (`eslint .`). |
-| `pnpm typecheck` | Run Nuxt type checking (`nuxt typecheck`). |
-| `pnpm test` | Run unit tests with Vitest (`vitest run`). |
-| `pnpm check` | Run linter, type check, and tests all at once. |
-| `pnpm docs:dev` | Start VitePress documentation development server. |
-| `pnpm docs:build` | Build VitePress documentation. |
-| `pnpm docs:preview` | Preview VitePress documentation locally. |
+| Script              | Description                                          |
+| :------------------ | :--------------------------------------------------- |
+| `pnpm dev`          | Start Nuxt development server for the UI and API.    |
+| `pnpm build`        | Build the application for production (`nuxt build`). |
+| `pnpm preview`      | Preview the production build locally.                |
+| `pnpm lint`         | Run ESLint across the codebase (`eslint .`).         |
+| `pnpm typecheck`    | Run Nuxt type checking (`nuxt typecheck`).           |
+| `pnpm test`         | Run unit tests with Vitest (`vitest run`).           |
+| `pnpm check`        | Run linter, type check, and tests all at once.       |
+| `pnpm docs:dev`     | Start VitePress documentation development server.    |
+| `pnpm docs:build`   | Build VitePress documentation.                       |
+| `pnpm docs:preview` | Preview VitePress documentation locally.             |
 
 ## Test Fixtures
 

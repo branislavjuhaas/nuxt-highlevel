@@ -1,1 +1,1 @@
-export default defineEventHandler(() => greet('web'))
+export default defineEventHandler(() => greet("web"));

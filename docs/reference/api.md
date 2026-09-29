@@ -9,6 +9,7 @@ Nuxt Highlevel is powered by a Nitro backend server providing a clean REST API f
 Returns the complete architecture graph model (`GraphModel`) for the analyzed repository.
 
 **Response Structure (`GraphModel`)**:
+
 ```ts
 {
   root: string              // Absolute path to the analyzed repo
@@ -36,6 +37,7 @@ Forces re-analysis of the target repository (clearing the in-memory cache) and r
 Opens a file or path in your local editor using `launch-editor`.
 
 **Request Body**:
+
 ```json
 {
   "path": "path/to/file.ts",
@@ -43,4 +45,5 @@ Opens a file or path in your local editor using `launch-editor`.
   "column": 5
 }
 ```
-*(Editor preference respects `NUXT_EDITOR` environment variable or the `--editor` CLI flag).*
+
+_(Editor preference respects `NUXT_EDITOR` environment variable or the `--editor` CLI flag)._

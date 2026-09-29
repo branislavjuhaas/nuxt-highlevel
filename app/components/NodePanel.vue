@@ -1,44 +1,65 @@
 <script setup lang="ts">
-import type { GraphEdge, GraphNode } from '#shared/types/graph'
-import type { GraphIndex, GraphView, ViewEdge } from '~/utils/graph-view'
+import type { GraphEdge, GraphNode } from "#shared/types/graph";
+import type { GraphIndex, GraphView, ViewEdge } from "~/utils/graph-view";
 
 const props = defineProps<{
-  index: GraphIndex
-  view: GraphView
-  node?: GraphNode
-  edge?: ViewEdge
-}>()
+  index: GraphIndex;
+  view: GraphView;
+  node?: GraphNode;
+  edge?: ViewEdge;
+}>();
 
 const emit = defineEmits<{
-  focus: [id: string]
-  drill: [id: string]
-  close: []
-}>()
+  focus: [id: string];
+  drill: [id: string];
+  close: [];
+}>();
 
-const { open } = useOpenInEditor()
-const { show: showCode } = useCodeViewer()
-const linesLabel = (lines: number[]) => `${lines.length > 1 ? 'Lines' : 'Line'} ${lines.join(', ')}`
-const label = (id: string) => props.index.nodes.get(id)?.label ?? id
-const pathOf = (id: string) => props.index.nodes.get(id)?.path ?? id
-const endLabels = (e: GraphEdge) => edgeEndLabels({ label: label(e.from), path: pathOf(e.from) }, { label: label(e.to), path: pathOf(e.to) })
+const { open } = useOpenInEditor();
+const { show: showCode } = useCodeViewer();
+const linesLabel = (lines: number[]) =>
+  `${lines.length > 1 ? "Lines" : "Line"} ${lines.join(", ")}`;
+const label = (id: string) => props.index.nodes.get(id)?.label ?? id;
+const pathOf = (id: string) => props.index.nodes.get(id)?.path ?? id;
+const endLabels = (e: GraphEdge) =>
+  edgeEndLabels(
+    { label: label(e.from), path: pathOf(e.from) },
+    { label: label(e.to), path: pathOf(e.to) },
+  );
 
-const outgoing = computed(() => props.view.edges.filter(e => e.source === props.node?.id))
-const incoming = computed(() => props.view.edges.filter(e => e.target === props.node?.id))
-const violations = computed(() => [...new Set([...outgoing.value, ...incoming.value].flatMap(e => e.violations))])
-const files = computed(() => props.node ? filesOf(props.index, props.node.id) : [])
-const cycleFile = computed(() => files.value.find(f => f.inCycle))
+const outgoing = computed(() => props.view.edges.filter((e) => e.source === props.node?.id));
+const incoming = computed(() => props.view.edges.filter((e) => e.target === props.node?.id));
+const violations = computed(() => [
+  ...new Set([...outgoing.value, ...incoming.value].flatMap((e) => e.violations)),
+]);
+const files = computed(() => (props.node ? filesOf(props.index, props.node.id) : []));
+const cycleFile = computed(() => files.value.find((f) => f.inCycle));
 // A plain click also selects the file. Modified clicks keep the link's own behavior (new tab, …).
 function focusCycle(event: MouseEvent) {
-  if (!cycleFile.value || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-  event.preventDefault()
-  emit('focus', cycleFile.value.id)
+  if (
+    !cycleFile.value ||
+    event.button ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  )
+    return;
+  event.preventDefault();
+  emit("focus", cycleFile.value.id);
 }
 // Per-row violations only add information when the rows don't all share the alert above.
-const rowViolations = computed(() => props.edge ? props.edge.violations.length > 1 || props.edge.edges.some(e => !e.violation) : false)
-const hint = computed(() => props.node && depthHint(props.node))
-const hasChildren = computed(() => props.node && (props.index.children.get(props.node.id)?.length ?? 0) > 0)
+const rowViolations = computed(() =>
+  props.edge
+    ? props.edge.violations.length > 1 || props.edge.edges.some((e) => !e.violation)
+    : false,
+);
+const hint = computed(() => props.node && depthHint(props.node));
+const hasChildren = computed(
+  () => props.node && (props.index.children.get(props.node.id)?.length ?? 0) > 0,
+);
 
-const FILE_LIMIT = 200
+const FILE_LIMIT = 200;
 </script>
 
 <template>
@@ -47,18 +68,12 @@ const FILE_LIMIT = 200
       <div class="min-w-0 flex-1">
         <template v-if="node">
           <div class="flex items-center gap-2">
-            <UIcon
-              :name="nodeIcon(node)"
-              class="size-5 shrink-0 text-muted"
-            />
+            <UIcon :name="nodeIcon(node)" class="size-5 shrink-0 text-muted" />
             <h2 class="truncate text-lg font-semibold text-highlighted">
               {{ node.label }}
             </h2>
           </div>
-          <p
-            class="mt-1 font-mono text-sm text-muted"
-            :title="node.path"
-          >
+          <p class="mt-1 font-mono text-sm text-muted" :title="node.path">
             <PathText :path="node.path" />
           </p>
         </template>
@@ -106,38 +121,22 @@ const FILE_LIMIT = 200
           </template>
         </div>
 
-        <dl
-          v-if="node.kind === 'package'"
-          class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5"
-        >
-          <dt class="text-muted">
-            Package
-          </dt>
+        <dl v-if="node.kind === 'package'" class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
+          <dt class="text-muted">Package</dt>
           <dd class="truncate font-mono text-sm leading-5">
             {{ node.packageName }}
           </dd>
-          <dt class="text-muted">
-            Kind
-          </dt>
+          <dt class="text-muted">Kind</dt>
           <dd>{{ node.packageKind }}</dd>
-          <dt class="text-muted">
-            Tier
-          </dt>
+          <dt class="text-muted">Tier</dt>
           <dd>
-            <UBadge
-              :label="node.tier"
-              :color="tierColor(node.tier)"
-              variant="subtle"
-              size="sm"
-            />
+            <UBadge :label="node.tier" :color="tierColor(node.tier)" variant="subtle" size="sm" />
             <span class="ml-2 text-sm text-muted">{{ node.tierReason }}</span>
           </dd>
           <template v-if="node.externalModules?.length">
-            <dt class="text-muted">
-              Modules
-            </dt>
+            <dt class="text-muted">Modules</dt>
             <dd class="font-mono text-sm leading-5">
-              {{ node.externalModules.join(', ') }}
+              {{ node.externalModules.join(", ") }}
             </dd>
           </template>
         </dl>
@@ -147,10 +146,16 @@ const FILE_LIMIT = 200
             v-for="metric in [
               { label: 'Files', value: node.files },
               { label: 'LOC', value: node.loc },
-              { label: 'Files used from outside', value: node.kind === 'file' ? '–' : node.surface },
-              { label: 'Names used from outside', value: node.kind === 'file' ? '–' : node.exports },
+              {
+                label: 'Files used from outside',
+                value: node.kind === 'file' ? '–' : node.surface,
+              },
+              {
+                label: 'Names used from outside',
+                value: node.kind === 'file' ? '–' : node.exports,
+              },
               { label: 'Fan-in', value: node.fanIn },
-              { label: 'Fan-out', value: node.fanOut }
+              { label: 'Fan-out', value: node.fanOut },
             ]"
             :key="metric.label"
             class="rounded-md bg-elevated px-2 py-1.5"
@@ -166,17 +171,16 @@ const FILE_LIMIT = 200
 
         <UAlert
           v-if="hint"
-          :icon="{ deep: 'i-lucide-gem', shallow: 'i-lucide-layers-2', neutral: 'i-lucide-box' }[hint.tone]"
+          :icon="
+            { deep: 'i-lucide-gem', shallow: 'i-lucide-layers-2', neutral: 'i-lucide-box' }[
+              hint.tone
+            ]
+          "
           :color="hint.tone === 'deep' ? 'success' : 'neutral'"
           variant="subtle"
           :description="hint.text"
         />
-        <UAlert
-          v-if="node.inCycle"
-          icon="i-lucide-refresh-cw"
-          color="error"
-          variant="subtle"
-        >
+        <UAlert v-if="node.inCycle" icon="i-lucide-refresh-cw" color="error" variant="subtle">
           <template #description>
             <template v-if="node.kind === 'file'">
               This file is part of a dependency cycle.
@@ -188,7 +192,8 @@ const FILE_LIMIT = 200
                 raw
                 class="text-error underline underline-offset-2 hover:text-error/75"
                 @click="focusCycle"
-              >dependency cycle</ULink>.
+                >dependency cycle</ULink
+              >.
             </template>
           </template>
         </UAlert>
@@ -205,7 +210,7 @@ const FILE_LIMIT = 200
         <section
           v-for="list in [
             { title: 'Depends on', edges: outgoing, other: (e: ViewEdge) => e.target },
-            { title: 'Used by', edges: incoming, other: (e: ViewEdge) => e.source }
+            { title: 'Used by', edges: incoming, other: (e: ViewEdge) => e.source },
           ]"
           :key="list.title"
         >
@@ -213,10 +218,7 @@ const FILE_LIMIT = 200
             {{ list.title }} ({{ list.edges.length }})
           </h3>
           <ul class="space-y-0.5">
-            <li
-              v-for="e in list.edges"
-              :key="e.id"
-            >
+            <li v-for="e in list.edges" :key="e.id">
               <button
                 class="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-elevated"
                 :title="`${pathOf(list.other(e))}\n${edgeSummary(e)}`"
@@ -225,7 +227,8 @@ const FILE_LIMIT = 200
                 <span
                   class="truncate"
                   :class="e.violations.length || e.inCycle ? 'text-error' : ''"
-                >{{ label(list.other(e)) }}</span>
+                  >{{ label(list.other(e)) }}</span
+                >
                 <span class="ml-auto shrink-0 text-sm text-muted">{{ e.count }}</span>
               </button>
             </li>
@@ -251,10 +254,7 @@ const FILE_LIMIT = 200
               </button>
             </li>
           </ul>
-          <p
-            v-if="files.length > FILE_LIMIT"
-            class="mt-1 text-sm text-muted"
-          >
+          <p v-if="files.length > FILE_LIMIT" class="mt-1 text-sm text-muted">
             and {{ files.length - FILE_LIMIT }} more
           </p>
         </section>
@@ -281,15 +281,8 @@ const FILE_LIMIT = 200
             Dependencies ({{ edge.edges.length }})
           </h3>
           <ul class="space-y-2">
-            <li
-              v-for="(e, i) in edge.edges"
-              :key="i"
-              class="rounded-md bg-elevated px-2 py-1.5"
-            >
-              <p
-                v-if="rowViolations && e.violation"
-                class="mb-1 text-sm text-error"
-              >
+            <li v-for="(e, i) in edge.edges" :key="i" class="rounded-md bg-elevated px-2 py-1.5">
+              <p v-if="rowViolations && e.violation" class="mb-1 text-sm text-error">
                 {{ e.violation }}
               </p>
               <div>
@@ -321,7 +314,8 @@ const FILE_LIMIT = 200
                   class="after:content-[',_'] last:after:content-none"
                   :class="{ 'text-primary': e.auto?.includes(name) }"
                   :title="e.auto?.includes(name) ? 'auto-imported, no import statement' : undefined"
-                >{{ name }}</span>
+                  >{{ name }}</span
+                >
               </div>
               <div class="mt-1.5 flex items-center gap-1.5">
                 <UButton
@@ -334,14 +328,13 @@ const FILE_LIMIT = 200
                 />
                 <UTooltip
                   v-if="e.auto?.length"
-                  :text="e.auto.length === e.names?.length ? 'Nuxt auto-import: used without an import statement' : 'Partly auto-imported: highlighted names have no import statement'"
+                  :text="
+                    e.auto.length === e.names?.length
+                      ? 'Nuxt auto-import: used without an import statement'
+                      : 'Partly auto-imported: highlighted names have no import statement'
+                  "
                 >
-                  <UBadge
-                    label="auto-import"
-                    variant="subtle"
-                    color="primary"
-                    size="sm"
-                  />
+                  <UBadge label="auto-import" variant="subtle" color="primary" size="sm" />
                 </UTooltip>
                 <UBadge
                   v-if="!e.auto?.length || e.auto.length < (e.names?.length ?? 0)"

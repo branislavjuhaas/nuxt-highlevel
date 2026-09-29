@@ -1,5 +1,5 @@
 export interface Graph {
-  nodes: string[]
-  edges: [string, string][]
-  cycles?: string[][]
+  nodes: string[];
+  edges: [string, string][];
+  cycles?: string[][];
 }

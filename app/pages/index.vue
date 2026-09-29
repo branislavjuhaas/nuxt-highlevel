@@ -1,107 +1,129 @@
 <script setup lang="ts">
-import type { BreadcrumbItem } from '@nuxt/ui'
-import { useStorage } from '@vueuse/core'
-import type { ViewEdge } from '~/utils/graph-view'
+import type { BreadcrumbItem } from "@nuxt/ui";
+import { useStorage } from "@vueuse/core";
+import type { ViewEdge } from "~/utils/graph-view";
 
-const route = useRoute()
-const router = useRouter()
-const { model, index, status, error, refreshing, reanalyze } = useGraph()
+const route = useRoute();
+const router = useRouter();
+const { model, index, status, error, refreshing, reanalyze } = useGraph();
 
-const lastPath = useStorage<Record<string, string>>('nuxt-highlevel:last-path', {})
-const searchOpen = ref(false)
-const depthOpen = useStorage('nuxt-highlevel:depth-open', false)
-const { target: codeTarget } = useCodeViewer()
-const selectedId = ref<string>()
-const selectedEdge = ref<ViewEdge>()
+const lastPath = useStorage<Record<string, string>>("nuxt-highlevel:last-path", {});
+const searchOpen = ref(false);
+const depthOpen = useStorage("nuxt-highlevel:depth-open", false);
+const { target: codeTarget } = useCodeViewer();
+const selectedId = ref<string>();
+const selectedEdge = ref<ViewEdge>();
 
 // Drill path lives in the URL, the last one per repo is restored on the next visit.
-const top = computed(() => index.value ? topLevel(index.value) : 'repo')
+const top = computed(() => (index.value ? topLevel(index.value) : "repo"));
 const parentId = computed(() => {
-  const path = route.query.path
-  return typeof path === 'string' && index.value?.nodes.has(path) && index.value.chain(path).includes(top.value) ? path : top.value
-})
-watch(model, (value) => {
-  const saved = value && lastPath.value[value.root]
-  if (saved && !route.query.path && index.value?.nodes.has(saved)) router.replace({ query: { path: saved } })
-}, { once: true })
+  const path = route.query.path;
+  return typeof path === "string" &&
+    index.value?.nodes.has(path) &&
+    index.value.chain(path).includes(top.value)
+    ? path
+    : top.value;
+});
+watch(
+  model,
+  (value) => {
+    const saved = value && lastPath.value[value.root];
+    if (saved && !route.query.path && index.value?.nodes.has(saved))
+      router.replace({ query: { path: saved } });
+  },
+  { once: true },
+);
 watch(parentId, (id) => {
-  if (model.value) lastPath.value = { ...lastPath.value, [model.value.root]: id }
-})
+  if (model.value) lastPath.value = { ...lastPath.value, [model.value.root]: id };
+});
 
-const view = computed(() => index.value && buildView(index.value, parentId.value))
-const selectedNode = computed(() => selectedId.value ? index.value?.nodes.get(selectedId.value) : undefined)
+const view = computed(() => index.value && buildView(index.value, parentId.value));
+const selectedNode = computed(() =>
+  selectedId.value ? index.value?.nodes.get(selectedId.value) : undefined,
+);
 
-const breadcrumb = computed<BreadcrumbItem[]>(() => index.value?.chain(parentId.value).slice(index.value.chain(top.value).length - 1).map((id) => {
-  const node = index.value!.nodes.get(id)!
-  return { label: node.label, icon: nodeIcon(node), to: { query: { path: id } } }
-}) ?? [])
+const breadcrumb = computed<BreadcrumbItem[]>(
+  () =>
+    index.value
+      ?.chain(parentId.value)
+      .slice(index.value.chain(top.value).length - 1)
+      .map((id) => {
+        const node = index.value!.nodes.get(id)!;
+        return { label: node.label, icon: nodeIcon(node), to: { query: { path: id } } };
+      }) ?? [],
+);
 
 function clearSelection() {
-  selectedId.value = undefined
-  selectedEdge.value = undefined
+  selectedId.value = undefined;
+  selectedEdge.value = undefined;
 }
 
 function select(id: string) {
-  selectedEdge.value = undefined
-  selectedId.value = id
+  selectedEdge.value = undefined;
+  selectedId.value = id;
 }
 
 function selectEdge(edge: ViewEdge) {
-  selectedId.value = edge.id
-  selectedEdge.value = edge
+  selectedId.value = edge.id;
+  selectedEdge.value = edge;
 }
 
 function drill(id: string) {
-  clearSelection()
-  router.push({ query: { path: id } })
+  clearSelection();
+  router.push({ query: { path: id } });
 }
 
 /** Shows a node in its own level and selects it. */
 function focus(id: string) {
-  const node = index.value?.nodes.get(id)
-  if (!node) return
-  if (node.parent && node.parent !== parentId.value) router.push({ query: { path: node.parent } })
-  select(id)
+  const node = index.value?.nodes.get(id);
+  if (!node) return;
+  if (node.parent && node.parent !== parentId.value) router.push({ query: { path: node.parent } });
+  select(id);
 }
 
 function activate(id: string) {
-  const node = index.value?.nodes.get(id)
-  const inView = view.value?.nodes.find(n => n.node.id === id)
-  if (!node || !inView) return
-  if (inView.ghost) focus(id)
-  else if (node.kind === 'file') select(id)
-  else drill(id)
+  const node = index.value?.nodes.get(id);
+  const inView = view.value?.nodes.find((n) => n.node.id === id);
+  if (!node || !inView) return;
+  if (inView.ghost) focus(id);
+  else if (node.kind === "file") select(id);
+  else drill(id);
 }
 
 function goUp() {
-  const parent = index.value?.nodes.get(parentId.value)?.parent
-  if (parent && parentId.value !== top.value) drill(parent)
+  const parent = index.value?.nodes.get(parentId.value)?.parent;
+  if (parent && parentId.value !== top.value) drill(parent);
 }
 
-const activeElement = useActiveElement()
-const typing = computed(() => ['INPUT', 'TEXTAREA'].includes(activeElement.value?.tagName ?? '') || activeElement.value?.isContentEditable)
+const activeElement = useActiveElement();
+const typing = computed(
+  () =>
+    ["INPUT", "TEXTAREA"].includes(activeElement.value?.tagName ?? "") ||
+    activeElement.value?.isContentEditable,
+);
 const keys = useMagicKeys({
   passive: false,
   onEventFired(event) {
-    if (event.type === 'keydown' && (event.metaKey || event.ctrlKey) && event.key === 'k') event.preventDefault()
-  }
-})
-whenever(() => keys['Meta+K']!.value || keys['Ctrl+K']!.value, () => searchOpen.value = true)
-const modalOpen = computed(() => searchOpen.value || Boolean(codeTarget.value))
+    if (event.type === "keydown" && (event.metaKey || event.ctrlKey) && event.key === "k")
+      event.preventDefault();
+  },
+});
+whenever(
+  () => keys["Meta+K"]!.value || keys["Ctrl+K"]!.value,
+  () => (searchOpen.value = true),
+);
+const modalOpen = computed(() => searchOpen.value || Boolean(codeTarget.value));
 // Checked on the event itself: modals close on the same keydown, a watcher would already see them closed.
-onKeyStroke('Escape', () => {
-  if (!modalOpen.value) clearSelection()
-})
-whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
+onKeyStroke("Escape", () => {
+  if (!modalOpen.value) clearSelection();
+});
+whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp);
 </script>
 
 <template>
   <div class="flex h-dvh flex-col">
     <header class="flex h-14 shrink-0 items-center gap-3 border-b border-default px-4">
-      <UBreadcrumb
-        :items="breadcrumb"
-        class="min-w-0 flex-1"
-      />
+      <UBreadcrumb :items="breadcrumb" class="min-w-0 flex-1" />
 
       <UPopover v-if="model?.warnings.length">
         <UButton
@@ -113,10 +135,7 @@ whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
         />
         <template #content>
           <ul class="max-w-md space-y-2 p-3 text-sm">
-            <li
-              v-for="warning in model.warnings"
-              :key="warning"
-            >
+            <li v-for="warning in model.warnings" :key="warning">
               {{ warning }}
             </li>
           </ul>
@@ -132,14 +151,8 @@ whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
         @click="searchOpen = true"
       >
         <template #trailing>
-          <UKbd
-            value="meta"
-            size="sm"
-          />
-          <UKbd
-            value="K"
-            size="sm"
-          />
+          <UKbd value="meta" size="sm" />
+          <UKbd value="K" size="sm" />
         </template>
       </UButton>
       <UButton
@@ -171,16 +184,10 @@ whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
           v-if="status === 'pending'"
           class="flex h-full items-center justify-center gap-2 text-muted"
         >
-          <UIcon
-            name="i-lucide-loader-circle"
-            class="size-5 animate-spin"
-          />
+          <UIcon name="i-lucide-loader-circle" class="size-5 animate-spin" />
           Analyzing…
         </div>
-        <div
-          v-else-if="error"
-          class="p-6"
-        >
+        <div v-else-if="error" class="p-6">
           <UAlert
             color="error"
             icon="i-lucide-circle-x"
@@ -189,10 +196,7 @@ whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
           />
         </div>
         <template v-else-if="view && index">
-          <div
-            v-if="!view.nodes.length"
-            class="flex h-full items-center justify-center text-muted"
-          >
+          <div v-if="!view.nodes.length" class="flex h-full items-center justify-center text-muted">
             Nothing to show here.
           </div>
           <GraphCanvas
@@ -210,11 +214,7 @@ whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
               Double-click to drill in · Backspace to go up · Tiers from {{ model?.rulesSource }}
             </p>
           </div>
-          <GraphSearch
-            v-model:open="searchOpen"
-            :index="index"
-            @select="focus"
-          />
+          <GraphSearch v-model:open="searchOpen" :index="index" @select="focus" />
         </template>
       </main>
 

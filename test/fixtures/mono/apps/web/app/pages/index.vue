@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { formatPrice } from '@mono/utils'
+import { formatPrice } from "@mono/utils";
 
-const { total } = useCart()
-const foo = useFoo()
+const { total } = useCart();
+const foo = useFoo();
 </script>
 
 <template>

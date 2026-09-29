@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const title = useAppTitle()
+const title = useAppTitle();
 </script>
 
 <template>
@@ -7,8 +7,6 @@ const title = useAppTitle()
     <NuxtLink to="/">
       {{ title }}
     </NuxtLink>
-    <NuxtLink to="/about">
-      About
-    </NuxtLink>
+    <NuxtLink to="/about"> About </NuxtLink>
   </header>
 </template>

@@ -1,1 +1,1 @@
-export default defineEventHandler(() => loadTodos())
+export default defineEventHandler(() => loadTodos());

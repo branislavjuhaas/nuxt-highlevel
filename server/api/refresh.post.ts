@@ -1,1 +1,1 @@
-export default defineEventHandler(() => getAnalysis(true))
+export default defineEventHandler(() => getAnalysis(true));

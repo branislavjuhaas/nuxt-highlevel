@@ -1,1 +1,1 @@
-export default defineEventHandler(() => buildGraph())
+export default defineEventHandler(() => buildGraph());

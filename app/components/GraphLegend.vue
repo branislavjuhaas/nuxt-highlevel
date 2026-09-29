@@ -1,25 +1,19 @@
 <script setup lang="ts">
 const items = [
-  { label: 'import', stroke: EDGE_COLORS.import },
-  { label: 'package dependency', stroke: EDGE_COLORS.dependency, dash: '2 4' },
-  { label: 'extends (layer)', stroke: EDGE_COLORS.extends },
-  { label: 'Nuxt module', stroke: EDGE_COLORS.module },
-  { label: 'rule violation or cycle back-edge', stroke: EDGE_COLORS.problem }
-]
+  { label: "import", stroke: EDGE_COLORS.import },
+  { label: "package dependency", stroke: EDGE_COLORS.dependency, dash: "2 4" },
+  { label: "extends (layer)", stroke: EDGE_COLORS.extends },
+  { label: "Nuxt module", stroke: EDGE_COLORS.module },
+  { label: "rule violation or cycle back-edge", stroke: EDGE_COLORS.problem },
+];
 </script>
 
 <template>
-  <ul class="w-fit space-y-1 rounded-md border border-default bg-default/90 px-3 py-2 text-xs text-muted backdrop-blur">
-    <li
-      v-for="item in items"
-      :key="item.label"
-      class="flex items-center gap-2"
-    >
-      <svg
-        width="28"
-        height="6"
-        aria-hidden="true"
-      >
+  <ul
+    class="w-fit space-y-1 rounded-md border border-default bg-default/90 px-3 py-2 text-xs text-muted backdrop-blur"
+  >
+    <li v-for="item in items" :key="item.label" class="flex items-center gap-2">
+      <svg width="28" height="6" aria-hidden="true">
         <line
           x1="0"
           y1="3"

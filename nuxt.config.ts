@@ -1,47 +1,43 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: [
-    '@nuxt/eslint',
-    '@nuxt/ui',
-    '@vueuse/nuxt'
-  ],
+  modules: ["@nuxt/eslint", "@nuxt/ui", "@vueuse/nuxt"],
 
   // The graph is client-only (Vue Flow + elkjs), there is nothing to render on the server.
   ssr: false,
 
   devtools: {
-    enabled: true
+    enabled: true,
   },
 
   css: [
-    '~/assets/css/main.css',
-    '@vue-flow/core/dist/style.css',
-    '@vue-flow/core/dist/theme-default.css',
-    '@vue-flow/controls/dist/style.css',
-    '@vue-flow/minimap/dist/style.css'
+    "~/assets/css/main.css",
+    "@vue-flow/core/dist/style.css",
+    "@vue-flow/core/dist/theme-default.css",
+    "@vue-flow/controls/dist/style.css",
+    "@vue-flow/minimap/dist/style.css",
   ],
 
   runtimeConfig: {
     // Repo to analyze, set by the CLI via NUXT_TARGET_ROOT. Empty means cwd.
-    targetRoot: '',
-    editor: '',
+    targetRoot: "",
+    editor: "",
     public: {
-      repoName: ''
-    }
+      repoName: "",
+    },
   },
 
-  compatibilityDate: '2026-06-30',
+  compatibilityDate: "2026-06-30",
 
   typescript: {
-    strict: true
+    strict: true,
   },
 
   eslint: {
     config: {
       stylistic: {
-        commaDangle: 'never',
-        braceStyle: '1tbs'
-      }
-    }
-  }
-})
+        commaDangle: "never",
+        braceStyle: "1tbs",
+      },
+    },
+  },
+});

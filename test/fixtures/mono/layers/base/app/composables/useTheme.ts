@@ -1,3 +1,3 @@
 export function useTheme() {
-  return useState('theme', () => 'light')
+  return useState("theme", () => "light");
 }

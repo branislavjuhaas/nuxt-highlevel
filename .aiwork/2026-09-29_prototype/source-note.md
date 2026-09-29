@@ -1,4 +1,3 @@
-
 ## Use cases
 
 - visualize main parts of the app
@@ -14,11 +13,12 @@
 - not all dependencies are covered (auto imports, or otherwise hidden)
 - visualization is not useful, too small, very wide or tall
 - badly named nodes on graphs, like whole paths in the name
-- too many choices in the UI 
+- too many choices in the UI
 - too much configuration needed
 - no grouping or other way to understand the high level meaning of modules
 
 ## Resources
+
 - https://research.lukastrumm.com/nuxt-dependency-visualization/
-- Nuxt DevTools → Components → Graph 
+- Nuxt DevTools → Components → Graph
 - https://github.com/antoine-coulon/skott

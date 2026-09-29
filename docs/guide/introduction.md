@@ -1,6 +1,6 @@
 # Introduction
 
-**Nuxt Highlevel** is an advanced architecture visualization and analysis tool built specifically for Nuxt monorepos, multi-layer applications, internal modules, and packages. 
+**Nuxt Highlevel** is an advanced architecture visualization and analysis tool built specifically for Nuxt monorepos, multi-layer applications, internal modules, and packages.
 
 As Nuxt applications grow, maintaining clear architectural boundaries becomes challenging. Layers import from each other, components and composables are auto-imported implicitly, and circular dependencies or tier boundary violations can creep in unnoticed. Nuxt Highlevel solves this by providing an interactive, drillable architecture graph that reveals how your code connects from the repository level down to individual files.
 

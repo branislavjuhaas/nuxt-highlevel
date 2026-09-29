@@ -1,6 +1,6 @@
 <script setup lang="ts">
-defineProps<{ count: number }>()
-const track = useTrack()
+defineProps<{ count: number }>();
+const track = useTrack();
 </script>
 
 <template>

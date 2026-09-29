@@ -13,7 +13,7 @@ Nuxt Highlevel bridges the gap between Nuxt's runtime magic and static code anal
 
 ## Missing `.nuxt/` Directories
 
-If `.nuxt/` does not exist (for example, in a fresh git clone before running `nuxi prepare`), auto-import edges cannot be resolved. 
+If `.nuxt/` does not exist (for example, in a fresh git clone before running `nuxi prepare`), auto-import edges cannot be resolved.
 
 When you run `nuxt-highlevel`, it detects unprepared Nuxt configs and warns you. You can automatically prepare all projects before analysis by passing the `--prepare` flag:
 
