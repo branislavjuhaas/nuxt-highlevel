@@ -29,8 +29,8 @@ describe('depthHint', () => {
   })
 
   it('shows for every layer, module and lib, however small', () => {
-    expect(depthHint(node({ files: 1, loc: 300, exports: 2 }))).toEqual({ tone: 'deep', text: 'Deep: 2 names used from outside, backed by 300 lines' })
-    expect(depthHint(node({ packageKind: 'module', loc: 30, exports: 3 }))).toEqual({ tone: 'shallow', text: 'Shallow: 3 names used from outside, backed by only 30 lines' })
+    expect(depthHint(node({ files: 1, loc: 300, exports: 2 }))).toEqual({ tone: 'deep', text: 'Deep: 2 names used from outside, backed by 300 lines', summary: '2 names used from outside' })
+    expect(depthHint(node({ packageKind: 'module', loc: 30, exports: 3 }))).toEqual({ tone: 'shallow', text: 'Shallow: 3 names used from outside, backed by only 30 lines', summary: '3 names used from outside' })
     expect(depthHint(node({ packageKind: 'lib', loc: 80, exports: 2 }))?.tone).toBe('neutral')
   })
 
@@ -42,7 +42,7 @@ describe('depthHint', () => {
     expect(depthHint(node({ packageKind: 'app', exports: 0 }))).toBeUndefined()
     expect(depthHint(node({ kind: 'file' }))).toBeUndefined()
     expect(depthHint(node({ kind: 'area', files: 10, surface: 0, exports: 0 }))).toBeUndefined()
-    expect(depthHint(node({ kind: 'area', files: 10, surface: 2 }))?.tone).toBe('deep')
+    expect(depthHint(node({ kind: 'area', files: 10, surface: 2 }))).toMatchObject({ tone: 'deep', summary: '2 of 10 files used from outside' })
   })
 
   it('groups rated nodes by tone, biggest first', () => {

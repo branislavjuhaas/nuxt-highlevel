@@ -62,34 +62,49 @@ export function edgeSummary(edge: ViewEdge) {
 export type DepthTone = 'deep' | 'shallow' | 'neutral'
 
 /** Lines of code per name used from outside, the bounds of a deep and a shallow package. */
-const DEEP_LOC_PER_EXPORT = 60
-const SHALLOW_LOC_PER_EXPORT = 20
+export const DEEP_LOC_PER_EXPORT = 60
+export const SHALLOW_LOC_PER_EXPORT = 20
+/** Share of an area's files used from outside, the bounds of a deep and a shallow area. */
+export const DEEP_SURFACE_RATIO = 0.25
+export const SHALLOW_SURFACE_RATIO = 0.75
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
+
+export interface DepthHint {
+  tone: DepthTone
+  /** Standalone sentence, verdict included. */
+  text: string
+  /** Just the interface, for lists that already show the verdict and the lines of code. */
+  summary: string
+}
 
 /**
  * Hint about module depth: a small interface over a lot of code is good, the reverse is shallow.
  * Packages other than the app always get one, measured by names used from outside against lines of code.
  * Areas get one only when they're big enough and imported from outside, measured in files.
  */
-export function depthHint(node: GraphNode): { tone: DepthTone, text: string } | undefined {
+export function depthHint(node: GraphNode): DepthHint | undefined {
   if (node.kind === 'package' && node.packageKind !== 'app') {
-    if (!node.exports) return { tone: 'neutral', text: 'No code imported from outside, it only contributes through Nuxt (pages, plugins, config, …)' }
-    const interfaceText = `${plural(node.exports, 'name')} used from outside`
+    if (!node.exports) {
+      const text = 'No code imported from outside, it only contributes through Nuxt (pages, plugins, config, …)'
+      return { tone: 'neutral', text, summary: text }
+    }
+    const summary = `${plural(node.exports, 'name')} used from outside`
     const perExport = node.loc / node.exports
-    if (perExport >= DEEP_LOC_PER_EXPORT) return { tone: 'deep', text: `Deep: ${interfaceText}, backed by ${plural(node.loc, 'line')}` }
-    if (perExport < SHALLOW_LOC_PER_EXPORT) return { tone: 'shallow', text: `Shallow: ${interfaceText}, backed by only ${plural(node.loc, 'line')}` }
-    return { tone: 'neutral', text: `${interfaceText}, backed by ${plural(node.loc, 'line')}` }
+    if (perExport >= DEEP_LOC_PER_EXPORT) return { tone: 'deep', text: `Deep: ${summary}, backed by ${plural(node.loc, 'line')}`, summary }
+    if (perExport < SHALLOW_LOC_PER_EXPORT) return { tone: 'shallow', text: `Shallow: ${summary}, backed by only ${plural(node.loc, 'line')}`, summary }
+    return { tone: 'neutral', text: `${summary}, backed by ${plural(node.loc, 'line')}`, summary }
   }
   if (node.kind !== 'area' || node.files < 4 || !node.surface) return
   const ratio = node.surface / node.files
-  if (ratio <= 0.25) return { tone: 'deep', text: `Deep: only ${node.surface} of ${node.files} files are used from outside` }
-  if (ratio >= 0.75) return { tone: 'shallow', text: `Shallow: ${node.surface} of ${node.files} files are used from outside` }
+  const summary = `${node.surface} of ${node.files} files used from outside`
+  if (ratio <= DEEP_SURFACE_RATIO) return { tone: 'deep', text: `Deep: only ${node.surface} of ${node.files} files are used from outside`, summary }
+  if (ratio >= SHALLOW_SURFACE_RATIO) return { tone: 'shallow', text: `Shallow: ${node.surface} of ${node.files} files are used from outside`, summary }
 }
 
 export interface DepthEntry {
   node: GraphNode
-  text: string
+  summary: string
 }
 
 /** Every node with a depth hint, grouped by tone, biggest first. */
@@ -97,7 +112,7 @@ export function depthGroups(nodes: Iterable<GraphNode>) {
   const groups: Record<DepthTone, DepthEntry[]> = { deep: [], shallow: [], neutral: [] }
   for (const node of nodes) {
     const hint = depthHint(node)
-    if (hint) groups[hint.tone].push({ node, text: hint.text })
+    if (hint) groups[hint.tone].push({ node, summary: hint.summary })
   }
   for (const entries of Object.values(groups)) entries.sort((a, b) => b.node.loc - a.node.loc)
   return groups

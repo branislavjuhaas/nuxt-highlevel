@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { GraphIndex } from '~/utils/graph-view'
+import { DEEP_LOC_PER_EXPORT, DEEP_SURFACE_RATIO, SHALLOW_LOC_PER_EXPORT, SHALLOW_SURFACE_RATIO } from '~/utils/graph-style'
 
 const props = defineProps<{
   index: GraphIndex
@@ -22,14 +23,9 @@ const sections = computed(() => [
 <template>
   <aside class="flex h-full w-80 shrink-0 flex-col border-l border-default bg-default">
     <div class="flex items-start gap-2 border-b border-default p-4">
-      <div class="min-w-0 flex-1">
-        <h2 class="text-lg font-semibold text-highlighted">
-          Module depth
-        </h2>
-        <p class="mt-1 text-sm text-muted">
-          Small interface over a lot of code is deep, the reverse is shallow.
-        </p>
-      </div>
+      <h2 class="min-w-0 flex-1 text-lg font-semibold text-highlighted">
+        Module depth
+      </h2>
       <UButton
         icon="i-lucide-x"
         color="neutral"
@@ -41,6 +37,23 @@ const sections = computed(() => [
     </div>
 
     <div class="flex-1 space-y-5 overflow-y-auto p-4">
+      <div class="space-y-2 text-sm text-muted">
+        <p>
+          A module's interface is the names other code imports from it. Everything behind them is code its callers
+          never have to read.
+        </p>
+        <p>
+          A <span class="font-medium text-highlighted">deep</span> module hides a lot of code behind a few names:
+          callers learn little and get a lot, and its inside can change without breaking them. A
+          <span class="font-medium text-highlighted">shallow</span> one is nearly as big outside as inside, an extra
+          layer that saves its callers almost no work. Merge it into the code that uses it, or give it more to do.
+        </p>
+        <p class="text-xs text-dimmed">
+          Packages are rated by lines of code per name used from outside: deep from {{ DEEP_LOC_PER_EXPORT }},
+          shallow under {{ SHALLOW_LOC_PER_EXPORT }}. Areas by the share of their files used from outside: deep up to
+          {{ DEEP_SURFACE_RATIO * 100 }}%, shallow from {{ SHALLOW_SURFACE_RATIO * 100 }}%.
+        </p>
+      </div>
       <p
         v-if="!sections.length"
         class="text-sm text-muted"
@@ -62,7 +75,7 @@ const sections = computed(() => [
         </h3>
         <ul class="space-y-1">
           <li
-            v-for="{ node, text } in section.entries"
+            v-for="{ node, summary } in section.entries"
             :key="node.id"
           >
             <button
@@ -85,7 +98,7 @@ const sections = computed(() => [
               >
                 <PathText :path="node.path" />
               </span>
-              <span class="block text-sm text-muted">{{ text }}</span>
+              <span class="block text-sm text-muted">{{ summary }}</span>
             </button>
           </li>
         </ul>
