@@ -45,28 +45,31 @@ const lazy = () => import('./Lazy.vue')
   <div>{{ formatTotal(local) }}</div>
 </template>`)
     expect(scan.imports).toEqual([
-      { specifier: '@mono/utils', names: ['formatPrice'] },
-      { specifier: './Lazy.vue', names: [] }
+      { specifier: '@mono/utils', names: ['formatPrice'], line: 3 },
+      { specifier: './Lazy.vue', names: [], line: 5 }
     ])
-    expect([...scan.components].sort()).toEqual(['ProductList', 'TreeBranch'])
-    expect(scan.identifiers).toContain('useCart')
-    expect(scan.identifiers).toContain('isReady')
-    expect(scan.identifiers).toContain('formatTotal')
+    expect(scan.identifiers.get('useCart')).toBe(4)
+    expect(scan.identifiers.get('formatTotal')).toBe(10)
+    expect(scan.components.get('ProductList')).toBe(9)
+    expect([...scan.components.keys()].sort()).toEqual(['ProductList', 'TreeBranch'])
+    expect(scan.identifiers.has('useCart')).toBe(true)
+    expect(scan.identifiers.has('isReady')).toBe(true)
+    expect(scan.identifiers.has('formatTotal')).toBe(true)
     // declared locally or imported explicitly
-    expect(scan.identifiers).not.toContain('formatPrice')
+    expect(scan.identifiers.has('formatPrice')).toBe(false)
   })
 
   it('ignores member properties in template expressions', () => {
     const scan = scanFile('Item.vue', '<template><p>{{ item.useCart }}</p></template>')
-    expect(scan.identifiers).toContain('item')
-    expect(scan.identifiers).not.toContain('useCart')
+    expect(scan.identifiers.has('item')).toBe(true)
+    expect(scan.identifiers.has('useCart')).toBe(false)
   })
 
   it('ignores property names and collects re-exports', () => {
     const scan = scanFile('index.ts', `export { a } from './a'\nexport * from './b'\nconst x = obj.useNotThis({ alsoNot: 1 })`)
     expect(scan.imports.map(i => i.specifier)).toEqual(['./a', './b'])
-    expect(scan.identifiers).toContain('obj')
-    expect(scan.identifiers).not.toContain('useNotThis')
-    expect(scan.identifiers).not.toContain('alsoNot')
+    expect(scan.identifiers.has('obj')).toBe(true)
+    expect(scan.identifiers.has('useNotThis')).toBe(false)
+    expect(scan.identifiers.has('alsoNot')).toBe(false)
   })
 })

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const items = [
   { label: 'import', stroke: EDGE_COLORS.import },
-  { label: 'auto-import', stroke: EDGE_COLORS.auto, dash: '6 4' },
   { label: 'package dependency', stroke: EDGE_COLORS.dependency, dash: '2 4' },
   { label: 'extends (layer)', stroke: EDGE_COLORS.extends },
   { label: 'Nuxt module', stroke: EDGE_COLORS.module },

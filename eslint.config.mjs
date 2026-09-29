@@ -18,7 +18,7 @@ export default withNuxt(
     },
     rules: {
       // Vue Flow interaction classes
-      'better-tailwindcss/no-unknown-classes': ['error', { ignore: ['^nodrag$', '^nopan$'] }]
+      'better-tailwindcss/no-unknown-classes': ['error', { ignore: ['^nodrag$', '^nopan$', '^code-view$'] }]
     }
   }
 )

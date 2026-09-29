@@ -9,12 +9,12 @@ const WEB = 'pkg:apps/web'
 
 describe('buildView', () => {
   it('aggregates file edges to package edges at the top level', () => {
-    const view = buildView(index, 'repo', { includeAuto: true })
+    const view = buildView(index, 'repo')
     expect(view.nodes.map(n => n.node.label).sort()).toEqual(['base', 'nuxt-foo', 'promo', 'shop', 'utils', 'web'])
     expect(view.nodes.every(n => !n.ghost)).toBe(true)
 
     const webToBase = view.edges.find(e => e.id === `${WEB}->pkg:layers/base`)!
-    expect(webToBase.kinds).toEqual({ auto: 1, dependency: 1, extends: 1 })
+    expect(webToBase.kinds).toEqual({ import: 1, dependency: 1, extends: 1 })
 
     const baseToShop = view.edges.find(e => e.id === 'pkg:layers/base->pkg:layers/shop')!
     expect(baseToShop.violations).toEqual(['base must not depend on feature'])
@@ -22,14 +22,8 @@ describe('buildView', () => {
     expect(baseToShop.inCycle).toBe(true)
   })
 
-  it('hides auto-import edges when asked', () => {
-    const view = buildView(index, 'repo', { includeAuto: false })
-    expect(view.edges.find(e => e.id === 'pkg:layers/base->pkg:layers/shop')).toBeUndefined()
-    expect(view.edges.find(e => e.id === `${WEB}->pkg:layers/base`)!.kinds).toEqual({ dependency: 1, extends: 1 })
-  })
-
   it('shows areas inside a package with ghosts for the outside', () => {
-    const view = buildView(index, WEB, { includeAuto: true })
+    const view = buildView(index, WEB)
     const inside = view.nodes.filter(n => !n.ghost).map(n => n.node.label).sort()
     expect(inside).toEqual(['app.vue', 'components', 'composables', 'pages', 'server'])
     const ghosts = view.nodes.filter(n => n.ghost).map(n => n.node.id).sort()
@@ -39,7 +33,7 @@ describe('buildView', () => {
   })
 
   it('shows the component cycle at file level', () => {
-    const view = buildView(index, `${WEB}/area:components`, { includeAuto: true })
+    const view = buildView(index, `${WEB}/area:components`)
     const cycle = view.edges.filter(e => e.inCycle).map(e => e.id).sort()
     expect(cycle).toEqual([
       `${WEB}/area:components/file:TreeBranch.vue->${WEB}/area:components/file:TreeNode.vue`,

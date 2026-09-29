@@ -58,7 +58,7 @@ export function indexGraph(model: GraphModel): GraphIndex {
  * One level of the graph: the children of `parentId` plus edges between them, aggregated from file edges.
  * Edges leaving the level end in ghost nodes, the outside node closest to the current level.
  */
-export function buildView(index: GraphIndex, parentId: string, options: { includeAuto: boolean }): GraphView {
+export function buildView(index: GraphIndex, parentId: string): GraphView {
   const parentChain = index.chain(parentId)
   const nodes = new Map<string, ViewNode>()
   for (const node of index.children.get(parentId) ?? []) nodes.set(node.id, { node, ghost: false })
@@ -80,7 +80,6 @@ export function buildView(index: GraphIndex, parentId: string, options: { includ
 
   const edges = new Map<string, ViewEdge>()
   for (const edge of index.model.edges) {
-    if (edge.kind === 'auto' && !options.includeAuto) continue
     const source = place(edge.from)
     const target = place(edge.to)
     if (!source || !target || source === target) continue

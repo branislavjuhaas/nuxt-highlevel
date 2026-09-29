@@ -43,3 +43,39 @@
 .vue-flow .vue-flow__minimap {
   background-color: var(--ui-bg-elevated);
 }
+
+/* Shiki dual themes (`defaultColor: false`) with line numbers and highlighted lines. */
+.code-view .shiki {
+  background: transparent !important;
+  counter-reset: line;
+}
+
+.code-view .shiki span {
+  color: var(--shiki-light);
+}
+
+.dark .code-view .shiki span {
+  color: var(--shiki-dark);
+}
+
+.code-view .shiki .line {
+  display: inline-block;
+  min-width: 100%;
+  padding-right: 1rem;
+}
+
+.code-view .shiki .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 3rem;
+  margin-right: 1rem;
+  padding-right: 0.5rem;
+  text-align: right;
+  color: var(--ui-text-dimmed);
+}
+
+.code-view .shiki .line.highlighted {
+  background: color-mix(in oklab, var(--ui-warning) 18%, transparent);
+  box-shadow: inset 3px 0 var(--ui-warning);
+}

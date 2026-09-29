@@ -86,7 +86,7 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
   }
   for (const p of packages) {
     if (p.nuxtConfig && !registries.has(p.id)) {
-      warnings.push(`${p.relDir}: no .nuxt/ found, auto-import edges are missing. Run \`nuxi prepare\` there or start with --prepare.`)
+      warnings.push(`${p.relDir}: no .nuxt/ found, auto-imported dependencies are missing. Install its dependencies so \`nuxi prepare\` can run, then refresh.`)
     }
   }
 
@@ -148,13 +148,15 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
 
   // File edges
   const edgeMap = new Map<string, GraphEdge>()
-  const addEdge = (from: string, to: string, kind: EdgeKind, names: string[] = []) => {
+  const addEdge = (from: string, to: string, kind: EdgeKind, names: string[], line: number, auto = false) => {
     if (from === to) return
     const key = `${from}|${to}|${kind}`
-    const edge = edgeMap.get(key) ?? { from, to, kind, names: [] }
+    const edge = edgeMap.get(key) ?? { from, to, kind, names: [], auto: [], lines: [] }
     for (const name of names) {
       if (!edge.names!.includes(name)) edge.names!.push(name)
+      if (auto && !edge.auto!.includes(name)) edge.auto!.push(name)
     }
+    if (!edge.lines!.includes(line)) edge.lines!.push(line)
     edgeMap.set(key, edge)
   }
 
@@ -174,25 +176,25 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
   for (const file of files) {
     const registry = registries.get(file.pkg.id)
     const autoImports = file.isServer ? registry?.serverImports : registry?.imports
-    for (const { specifier, names } of file.scan.imports) {
+    for (const { specifier, names, line } of file.scan.imports) {
       if (registry && (specifier === '#imports' || specifier === '#components')) {
         for (const name of names) {
           const target = fileByAbs.get(autoImports?.get(name) ?? registry.components.get(name) ?? '')
-          if (target) addEdge(file.id, target.id, 'auto', [name])
+          if (target) addEdge(file.id, target.id, 'import', [name], line)
         }
         continue
       }
       const target = fileByAbs.get(resolveSpecifier(file, specifier, registry) ?? '')
-      if (target) addEdge(file.id, target.id, 'import', names)
+      if (target) addEdge(file.id, target.id, 'import', names, line)
     }
     if (!registry) continue
-    for (const name of file.scan.identifiers) {
+    for (const [name, line] of file.scan.identifiers) {
       const target = fileByAbs.get(autoImports?.get(name) ?? '')
-      if (target) addEdge(file.id, target.id, 'auto', [name])
+      if (target) addEdge(file.id, target.id, 'import', [name], line, true)
     }
-    for (const name of file.scan.components) {
+    for (const [name, line] of file.scan.components) {
       const target = fileByAbs.get(registry.components.get(name) ?? '')
-      if (target) addEdge(file.id, target.id, 'auto', [name])
+      if (target) addEdge(file.id, target.id, 'import', [name], line, true)
     }
   }
 
@@ -200,6 +202,8 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
   const edges = [...edgeMap.values()]
   for (const edge of edges) {
     if (!edge.names!.length) delete edge.names
+    if (!edge.auto!.length) delete edge.auto
+    edge.lines!.sort((a, b) => a - b)
   }
   for (const p of packages) {
     for (const [kind, targets] of [['dependency', p.dependencies], ['extends', p.extends], ['module', p.modules]] as const) {
@@ -249,7 +253,7 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
       if (from[level] === to[level]) continue
       if (nodes.get(from[level]!)!.kind !== 'file') add(fanOut, from[level]!, to[level]!)
       if (nodes.get(to[level]!)!.kind !== 'file') add(fanIn, to[level]!, from[level]!)
-      if (edge.kind === 'import' || edge.kind === 'auto') {
+      if (edge.kind === 'import') {
         for (const container of to.slice(level, -1)) add(surface, container, edge.to)
       }
     }
@@ -262,7 +266,7 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
 
   const fileEdges = new Map<string, Set<string>>()
   for (const edge of edges) {
-    if (edge.kind === 'import' || edge.kind === 'auto') add(fileEdges, edge.from, edge.to)
+    if (edge.kind === 'import') add(fileEdges, edge.from, edge.to)
   }
   const cycles = findCycles(files.map(f => f.id), fileEdges)
   for (const id of cycles.flat()) {

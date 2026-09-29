@@ -3,7 +3,6 @@ import type { ViewEdge } from './graph-view'
 
 export const EDGE_COLORS = {
   import: '#94a3b8',
-  auto: '#00c16a',
   dependency: '#94a3b8',
   extends: '#8b5cf6',
   module: '#0ea5e9',
@@ -46,9 +45,6 @@ export function edgeStyle(edge: ViewEdge, cycleBreaker: boolean) {
     stroke = EDGE_COLORS.extends
   } else if (kinds.module) {
     stroke = EDGE_COLORS.module
-  } else if (!kinds.import && kinds.auto) {
-    stroke = EDGE_COLORS.auto
-    strokeDasharray = '6 4'
   } else if (!kinds.import) {
     strokeDasharray = '2 4'
   }
@@ -58,6 +54,8 @@ export function edgeStyle(edge: ViewEdge, cycleBreaker: boolean) {
 
 export function edgeSummary(edge: ViewEdge) {
   const parts = Object.entries(edge.kinds).map(([kind, count]) => `${count}× ${kind}`)
+  const auto = edge.edges.filter(e => e.auto?.length).length
+  if (auto) parts.push(`${auto} via Nuxt auto-import (no import statement)`)
   return [parts.join(', '), ...edge.violations, ...(edge.inCycle ? ['part of a cycle'] : [])].join(' · ')
 }
 
@@ -67,4 +65,21 @@ export function depthHint(node: GraphNode) {
   const ratio = node.surface / node.files
   if (ratio <= 0.25) return { deep: true, text: `Deep: only ${node.surface} of ${node.files} files are used from outside` }
   if (ratio >= 0.75) return { deep: false, text: `Shallow: ${node.surface} of ${node.files} files are used from outside` }
+}
+
+const SHORT_PATH = 40
+
+/**
+ * Labels for both ends of an edge. When they'd read the same (two `graph.ts`), shows the paths instead:
+ * whole if short, otherwise from the first folder where they part ways.
+ */
+export function edgeEndLabels(from: { label: string, path: string }, to: { label: string, path: string }): [string, string] {
+  if (from.label !== to.label) return [from.label, to.label]
+  if (from.path.length <= SHORT_PATH && to.path.length <= SHORT_PATH) return [from.path, to.path]
+  const a = from.path.split('/')
+  const b = to.path.split('/')
+  let common = 0
+  while (common < Math.min(a.length, b.length) - 1 && a[common] === b[common]) common++
+  const trim = (parts: string[]) => `${common ? '…/' : ''}${parts.slice(common).join('/')}`
+  return [trim(a), trim(b)]
 }

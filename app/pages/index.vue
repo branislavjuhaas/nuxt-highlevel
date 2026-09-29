@@ -7,9 +7,9 @@ const route = useRoute()
 const router = useRouter()
 const { model, index, status, error, refreshing, reanalyze } = useGraph()
 
-const includeAuto = useStorage('nuxt-highlevel:include-auto', true)
 const lastPath = useStorage<Record<string, string>>('nuxt-highlevel:last-path', {})
 const searchOpen = ref(false)
+const { target: codeTarget } = useCodeViewer()
 const selectedId = ref<string>()
 const selectedEdge = ref<ViewEdge>()
 
@@ -27,7 +27,7 @@ watch(parentId, (id) => {
   if (model.value) lastPath.value = { ...lastPath.value, [model.value.root]: id }
 })
 
-const view = computed(() => index.value && buildView(index.value, parentId.value, { includeAuto: includeAuto.value }))
+const view = computed(() => index.value && buildView(index.value, parentId.value))
 const selectedNode = computed(() => selectedId.value ? index.value?.nodes.get(selectedId.value) : undefined)
 
 const breadcrumb = computed<BreadcrumbItem[]>(() => index.value?.chain(parentId.value).slice(index.value.chain(top.value).length - 1).map((id) => {
@@ -86,8 +86,12 @@ const keys = useMagicKeys({
   }
 })
 whenever(() => keys['Meta+K']!.value || keys['Ctrl+K']!.value, () => searchOpen.value = true)
-whenever(() => keys.Escape!.value && !searchOpen.value, clearSelection)
-whenever(() => keys.Backspace!.value && !typing.value && !searchOpen.value, goUp)
+const modalOpen = computed(() => searchOpen.value || Boolean(codeTarget.value))
+// Checked on the event itself: modals close on the same keydown, a watcher would already see them closed.
+onKeyStroke('Escape', () => {
+  if (!modalOpen.value) clearSelection()
+})
+whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
 </script>
 
 <template>
@@ -137,11 +141,6 @@ whenever(() => keys.Backspace!.value && !typing.value && !searchOpen.value, goUp
           />
         </template>
       </UButton>
-      <USwitch
-        v-model="includeAuto"
-        label="Auto-imports"
-        size="sm"
-      />
       <UTooltip :text="`Re-analyze ${model?.root ?? ''}`">
         <UButton
           icon="i-lucide-refresh-cw"
@@ -220,5 +219,6 @@ whenever(() => keys.Backspace!.value && !typing.value && !searchOpen.value, goUp
         @close="clearSelection"
       />
     </div>
+    <CodeViewer />
   </div>
 </template>

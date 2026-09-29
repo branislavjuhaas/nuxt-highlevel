@@ -1,7 +1,7 @@
 export type NodeKind = 'repo' | 'package' | 'area' | 'file'
 export type PackageKind = 'app' | 'layer' | 'module' | 'lib'
-/** `import`/`auto` connect files, the rest are declared between packages. */
-export type EdgeKind = 'import' | 'auto' | 'dependency' | 'extends' | 'module'
+/** `import` connects files (explicit and Nuxt auto-imports), the rest are declared between packages. */
+export type EdgeKind = 'import' | 'dependency' | 'extends' | 'module'
 
 export interface GraphNode {
   id: string
@@ -36,6 +36,10 @@ export interface GraphEdge {
   kind: EdgeKind
   /** Imported names for file edges. */
   names?: string[]
+  /** The subset of `names` Nuxt auto-imports, used without an import statement. */
+  auto?: string[]
+  /** 1-based lines in the `from` file where the dependency is imported or first used. */
+  lines?: number[]
   /** Text of the tier rule this edge breaks. */
   violation?: string
 }

@@ -35,18 +35,25 @@ describe('analyzeRepo', () => {
   })
 
   it('finds explicit and auto-import edges', () => {
-    expect(has('file:app.vue', 'file:AppHeader.vue', 'auto')).toBe(true)
-    expect(has('file:index.vue', 'file:ProductList.vue', 'auto')).toBe(true)
-    expect(has('file:index.vue', 'pkg:apps/web/layers/promo/area:components/file:PromoBanner.vue', 'auto')).toBe(true)
-    expect(has('file:index.vue', 'file:useCart.ts', 'auto')).toBe(true)
-    expect(has('file:index.vue', 'area:runtime/file:composables/useFoo.ts', 'auto')).toBe(true)
+    expect(has('file:app.vue', 'file:AppHeader.vue', 'import')).toBe(true)
+    expect(has('file:index.vue', 'file:ProductList.vue', 'import')).toBe(true)
+    expect(has('file:index.vue', 'pkg:apps/web/layers/promo/area:components/file:PromoBanner.vue', 'import')).toBe(true)
+    expect(has('file:index.vue', 'file:useCart.ts', 'import')).toBe(true)
+    expect(has('file:index.vue', 'area:runtime/file:composables/useFoo.ts', 'import')).toBe(true)
     expect(has('file:index.vue', 'file:index.ts', 'import')).toBe(true)
     expect(has('pkg:packages/utils/file:index.ts', 'file:format.ts', 'import')).toBe(true)
-    expect(has('file:api/hello.ts', 'file:utils/greet.ts', 'auto')).toBe(true)
+    expect(has('file:api/hello.ts', 'file:utils/greet.ts', 'import')).toBe(true)
     // borrowed registry: layer files resolve through the app extending them
-    expect(has('file:ProductList.vue', 'file:useTheme.ts', 'auto')).toBe(true)
+    expect(has('file:ProductList.vue', 'file:useTheme.ts', 'import')).toBe(true)
     // `useState` comes from Nuxt itself, not from the repo
-    expect(model.edges.filter(e => e.kind === 'auto' && e.from.endsWith('CartBadge.vue'))).toEqual([])
+    expect(model.edges.filter(e => e.kind === 'import' && e.from.endsWith('CartBadge.vue'))).toEqual([])
+  })
+
+  it('marks names used without an import statement as auto', () => {
+    const edge = (from: string, to: string) => model.edges.find(e => e.from.endsWith(from) && e.to.endsWith(to))!
+    expect(edge('file:index.vue', 'file:useCart.ts').auto).toEqual(['useCart'])
+    expect(edge('file:app.vue', 'file:AppHeader.vue').auto).toEqual(['AppHeader'])
+    expect(edge('pkg:packages/utils/file:index.ts', 'file:format.ts').auto).toBeUndefined()
   })
 
   it('keeps package-level edges', () => {
@@ -66,7 +73,8 @@ describe('analyzeRepo', () => {
     expect(violations).toEqual([expect.objectContaining({
       from: 'pkg:layers/base/area:components/file:AppHeader.vue',
       to: 'pkg:layers/shop/area:components/file:CartBadge.vue',
-      kind: 'auto',
+      kind: 'import',
+      lines: [8],
       violation: 'base must not depend on feature'
     })])
     expect(model.rulesSource).toBe('nuxt-highlevel.json')
@@ -84,8 +92,8 @@ describe('analyzeRepo', () => {
 })
 
 describe('analyzeRepo without .nuxt/', () => {
-  it('warns that auto-import edges are missing', () => {
+  it('warns that auto-imported dependencies are missing', () => {
     const model = analyzeRepo(`${fixtureRoot}/apps/web/layers/promo`)
-    expect(model.warnings).toEqual([expect.stringContaining('no .nuxt/ found, auto-import edges are missing')])
+    expect(model.warnings).toEqual([expect.stringContaining('no .nuxt/ found, auto-imported dependencies are missing')])
   })
 })

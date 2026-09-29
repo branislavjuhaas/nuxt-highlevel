@@ -1,9 +1,7 @@
 import { execSync } from 'node:child_process'
-import { existsSync, realpathSync } from 'node:fs'
 import launchEditor from 'launch-editor'
 // @ts-expect-error launch-editor does not export types for guess.js
 import guessEditor from 'launch-editor/guess.js'
-import { resolve } from 'pathe'
 
 function hasCommand(cmd: string): boolean {
   try {
@@ -35,15 +33,8 @@ export default defineEventHandler(async (event) => {
   if (!getHeader(event, 'content-type')?.includes('application/json')) {
     throw createError({ statusCode: 415, statusMessage: 'Expected JSON' })
   }
-  const { path } = await readBody<{ path?: unknown }>(event)
-  if (typeof path !== 'string' || !path) throw createError({ statusCode: 400, statusMessage: 'Missing path' })
-
-  const root = realpathSync(targetRoot())
-  const file = resolve(root, path)
-  // Only files inside the analyzed repo, also after following symlinks.
-  if (!existsSync(file) || !realpathSync(file).startsWith(`${root}/`)) {
-    throw createError({ statusCode: 403, statusMessage: 'Path is outside of the analyzed repo' })
-  }
+  const { path, line } = await readBody<{ path?: unknown, line?: unknown }>(event)
+  const file = repoFile(path)
 
   const editor = resolveEditor()
   if (!editor) {
@@ -54,7 +45,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const error = await new Promise<string | undefined>((done) => {
-    launchEditor(file, editor, (_file, message) => {
+    launchEditor(Number.isInteger(line) ? `${file}:${line}` : file, editor, (_file, message) => {
       done(message ?? `Could not open '${path}' in editor '${editor}'.`)
     })
     // launch-editor only reports failures, give it a moment before assuming success.
