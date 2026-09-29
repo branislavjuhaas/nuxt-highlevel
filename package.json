@@ -2,6 +2,7 @@
   "name": "nuxt-highlevel",
   "private": true,
   "description": "Architecture view of Nuxt (mono)repos: apps, layers, modules, packages, down to files",
+  "license": "MIT",
   "bin": {
     "nuxt-highlevel": "./bin/nuxt-highlevel.mjs"
   },
