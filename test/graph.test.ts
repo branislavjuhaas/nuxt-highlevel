@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { analyzeRepo, areaOf } from '../server/utils/analyzer/graph'
-import { fixtureRoot } from './fixture'
+import { fixtureRoot, legacyFixtureRoot, starterFixtureRoot } from './fixture'
 
 const WEB = 'pkg:apps/web'
 
@@ -96,5 +96,49 @@ describe('analyzeRepo without .nuxt/', () => {
   it('warns that auto-imported dependencies are missing', () => {
     const model = analyzeRepo(`${fixtureRoot}/apps/web/layers/promo`)
     expect(model.warnings).toEqual([expect.stringContaining('no .nuxt/ found, auto-imported dependencies are missing')])
+  })
+})
+
+describe('analyzeRepo on a starter app (auto-imports only)', () => {
+  const model = analyzeRepo(starterFixtureRoot)
+  const edges = model.edges.map(e => `${e.from.replace(/.*file:/, '')} → ${e.to.replace(/.*file:/, '')}`).sort()
+
+  it('resolves every dependency through the auto-import registry', () => {
+    expect(model.warnings).toEqual([])
+    expect(edges).toEqual([
+      'AppHeader.vue → useAppTitle.ts',
+      'counter/Controls.vue → useCounter.ts',
+      'counter/Display.vue → format.ts',
+      'counter/Display.vue → useCounter.ts',
+      'default.vue → AppHeader.vue',
+      'index.vue → counter/Controls.vue',
+      'index.vue → counter/Display.vue',
+      'useAppTitle.ts → format.ts'
+    ])
+    expect(model.edges.every(e => e.auto?.length)).toBe(true)
+  })
+
+  it('maps prefixed component names to nested files', () => {
+    const edge = model.edges.find(e => e.to.endsWith('file:counter/Display.vue'))!
+    expect(edge.auto).toEqual(['CounterDisplay'])
+  })
+})
+
+describe('analyzeRepo on a Nuxt 3 layout (no app/ dir)', () => {
+  const model = analyzeRepo(legacyFixtureRoot)
+
+  it('uses the package root as srcDir', () => {
+    const areas = model.nodes.filter(n => n.kind === 'area').map(n => n.label).sort()
+    expect(areas).toEqual(['components', 'composables', 'pages', 'server', 'utils'])
+    expect(model.nodes.find(n => n.id === 'pkg:./area:components/file:TodoList.vue')!.path).toBe('components/TodoList.vue')
+    expect(model.warnings).toEqual([])
+  })
+
+  it('resolves auto-imports from root-level dirs', () => {
+    const has = (from: string, to: string) => model.edges.some(e => e.from.endsWith(from) && e.to.endsWith(to))
+    expect(has('file:index.vue', 'file:TodoList.vue')).toBe(true)
+    expect(has('file:index.vue', 'file:useTodos.ts')).toBe(true)
+    expect(has('file:TodoList.vue', 'file:checkbox.ts')).toBe(true)
+    expect(has('file:api/todos.get.ts', 'file:utils/todos.ts')).toBe(true)
   })
 })

@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-const apps = ['./fixtures/mono/apps/web', './fixtures/standalone']
+const apps = ['./fixtures/mono/apps/web', './fixtures/standalone', './fixtures/starter', './fixtures/legacy']
 
 /** The analyzer reads the auto-import registry from `.nuxt/`, so the fixture apps need `nuxi prepare`. */
 export default function setup() {
