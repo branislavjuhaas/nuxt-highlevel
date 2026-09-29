@@ -6,7 +6,6 @@ import type { ViewEdge } from '~/utils/graph-view'
 const route = useRoute()
 const router = useRouter()
 const { model, index, status, error, refreshing, reanalyze } = useGraph()
-const { open: openInEditor } = useOpenInEditor()
 
 const includeAuto = useStorage('nuxt-highlevel:include-auto', true)
 const lastPath = useStorage<Record<string, string>>('nuxt-highlevel:last-path', {})
@@ -69,7 +68,7 @@ function activate(id: string) {
   const inView = view.value?.nodes.find(n => n.node.id === id)
   if (!node || !inView) return
   if (inView.ghost) focus(id)
-  else if (node.kind === 'file') openInEditor(node.path)
+  else if (node.kind === 'file') select(id)
   else drill(id)
 }
 
@@ -199,7 +198,7 @@ whenever(() => keys.Backspace!.value && !typing.value && !searchOpen.value, goUp
           <div class="pointer-events-none absolute bottom-3 left-3 space-y-2">
             <GraphLegend class="pointer-events-auto" />
             <p class="text-xs text-dimmed">
-              Double-click to open · Backspace to go up · Tiers from {{ model?.rulesSource }}
+              Double-click to drill in · Backspace to go up · Tiers from {{ model?.rulesSource }}
             </p>
           </div>
           <GraphSearch
