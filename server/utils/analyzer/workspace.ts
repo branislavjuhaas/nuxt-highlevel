@@ -157,8 +157,10 @@ export function discoverWorkspace(rootInput: string): Workspace {
   const packages = dirs.map(makePackage)
 
   // Layers don't need a package.json: Nuxt auto-registers `layers/*` and `extends` can point to any directory.
+  // Same for local modules in `modules/*/index.*`.
   const configs = new Map<string, ReturnType<typeof readNuxtConfig>>()
   const autoLayers = new Map<string, string[]>()
+  const autoModules = new Map<string, string[]>()
   const known = new Map(packages.map(p => [p.dir, p]))
   const queue = packages.filter(p => p.nuxtConfig)
   for (let p = queue.shift(); p; p = queue.shift()) {
@@ -179,6 +181,14 @@ export function discoverWorkspace(rootInput: string): Workspace {
       packages.push(layer)
       known.set(dir, layer)
       queue.push(layer)
+    }
+    const localModules = globSync('modules/*/index.{ts,mts,js,mjs}', { cwd: p.dir, absolute: true }).map(dirname).sort()
+    autoModules.set(p.id, localModules)
+    for (const dir of localModules) {
+      if (known.has(dir)) continue
+      const module = makePackage(dir)
+      packages.push(module)
+      known.set(dir, module)
     }
   }
   packages.sort((a, b) => a.relDir.localeCompare(b.relDir))
@@ -223,11 +233,18 @@ export function discoverWorkspace(rootInput: string): Workspace {
         extended.add(target.id)
       }
     }
+    for (const dir of autoModules.get(p.id)!) {
+      const target = known.get(dir)!
+      if (!p.modules.includes(target.id)) {
+        p.modules.push(target.id)
+        usedAsModule.add(target.id)
+      }
+    }
     for (const entry of config.modules) {
       const target = resolveReference(p, entry)
       if (!target) {
         if (!entry.startsWith('.')) p.externalModules.push(entry)
-      } else if (target !== p) {
+      } else if (target !== p && !p.modules.includes(target.id)) {
         p.modules.push(target.id)
         usedAsModule.add(target.id)
       }

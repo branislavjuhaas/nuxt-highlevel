@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { discoverWorkspace, readNuxtConfig } from '../server/utils/analyzer/workspace'
-import { fixtureRoot } from './fixture'
+import { fixtureRoot, standaloneFixtureRoot } from './fixture'
 
 describe('discoverWorkspace', () => {
   const { packages, warnings } = discoverWorkspace(fixtureRoot)
@@ -33,6 +33,19 @@ describe('discoverWorkspace', () => {
     expect(web.modules).toEqual(['pkg:packages/nuxt-foo'])
     expect(web.dependencies.sort()).toEqual(['pkg:layers/base', 'pkg:layers/shop', 'pkg:packages/nuxt-foo', 'pkg:packages/utils'])
     expect(byDir['layers/shop']!.dependencies.sort()).toEqual(['pkg:layers/base', 'pkg:packages/utils'])
+  })
+})
+
+describe('discoverWorkspace (standalone app)', () => {
+  const { packages, warnings } = discoverWorkspace(standaloneFixtureRoot)
+  const byDir = Object.fromEntries(packages.map(p => [p.relDir, p]))
+
+  it('auto-registers local layers and modules', () => {
+    expect(Object.keys(byDir).sort()).toEqual(['.', 'layers/analytics', 'layers/ui', 'modules/stats'])
+    expect(warnings).toEqual([])
+    expect(byDir['modules/stats']!.kind).toBe('module')
+    expect(byDir['modules/stats']!.label).toBe('stats')
+    expect(byDir['.']!.modules).toEqual(['pkg:modules/stats'])
   })
 })
 
