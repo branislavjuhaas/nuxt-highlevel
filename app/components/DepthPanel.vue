@@ -116,9 +116,9 @@ const sections = computed(() =>
               type="button"
               class="w-full rounded-md px-2 py-1.5 text-left hover:bg-elevated"
               :class="{ 'bg-elevated': node.id === selectedId }"
-              @click="emit('focus', node.id)"
               variant="ghost"
               color="neutral"
+              @click="emit('focus', node.id)"
             >
               <span class="flex items-center gap-1.5">
                 <UIcon :name="nodeIcon(node)" class="size-4 shrink-0 text-muted" />

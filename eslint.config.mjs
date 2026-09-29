@@ -14,6 +14,8 @@ export default withNuxt(
       },
     },
     rules: {
+      // vp fmt writes void elements self-closing.
+      "vue/html-self-closing": "off",
       // Vue Flow interaction classes
       "better-tailwindcss/no-unknown-classes": [
         "error",

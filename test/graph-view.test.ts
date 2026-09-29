@@ -10,7 +10,7 @@ const WEB = "pkg:apps/web";
 describe("buildView", () => {
   it("aggregates file edges to package edges at the top level", () => {
     const view = buildView(index, "repo");
-    expect(view.nodes.map((n) => n.node.label).sort()).toEqual([
+    expect(view.nodes.map((n) => n.node.label).sort((a, b) => a.localeCompare(b))).toEqual([
       "base",
       "nuxt-foo",
       "promo",
@@ -34,12 +34,12 @@ describe("buildView", () => {
     const inside = view.nodes
       .filter((n) => !n.ghost)
       .map((n) => n.node.label)
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
     expect(inside).toEqual(["app.vue", "components", "composables", "pages", "server"]);
     const ghosts = view.nodes
       .filter((n) => n.ghost)
       .map((n) => n.node.id)
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
     expect(ghosts).toEqual([
       "pkg:apps/web/layers/promo",
       "pkg:layers/base",
@@ -56,7 +56,7 @@ describe("buildView", () => {
     const cycle = view.edges
       .filter((e) => e.inCycle)
       .map((e) => e.id)
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
     expect(cycle).toEqual([
       `${WEB}/area:components/file:TreeBranch.vue->${WEB}/area:components/file:TreeNode.vue`,
       `${WEB}/area:components/file:TreeNode.vue->${WEB}/area:components/file:TreeBranch.vue`,

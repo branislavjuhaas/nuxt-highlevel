@@ -224,9 +224,9 @@ const FILE_LIMIT = 200;
               <UTooltip :text="`${pathOf(list.other(e))}\n${edgeSummary(e)}`">
                 <UButton
                   class="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-elevated"
-                  @click="emit('focus', list.other(e))"
                   variant="ghost"
                   color="neutral"
+                  @click="emit('focus', list.other(e))"
                 >
                   <span
                     class="truncate"
@@ -253,9 +253,9 @@ const FILE_LIMIT = 200;
               <UTooltip :text="file.path">
                 <UButton
                   class="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left hover:bg-elevated"
-                  @click="emit('focus', file.id)"
                   variant="ghost"
                   color="neutral"
+                  @click="emit('focus', file.id)"
                 >
                   {{ file.label }}
                 </UButton>
@@ -297,10 +297,10 @@ const FILE_LIMIT = 200;
                 <UTooltip :text="pathOf(e.from)">
                   <UButton
                     class="text-left hover:underline"
-                    @click="emit('focus', e.from)"
                     variant="link"
                     color="neutral"
                     :padded="false"
+                    @click="emit('focus', e.from)"
                   >
                     <PathText :path="endLabels(e)[0]" />
                   </UButton>
@@ -311,10 +311,10 @@ const FILE_LIMIT = 200;
                 <UTooltip :text="pathOf(e.to)">
                   <UButton
                     class="min-w-0 text-left hover:underline"
-                    @click="emit('focus', e.to)"
                     variant="link"
                     color="neutral"
                     :padded="false"
+                    @click="emit('focus', e.to)"
                   >
                     <PathText :path="endLabels(e)[1]" />
                   </UButton>

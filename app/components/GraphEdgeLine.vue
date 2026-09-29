@@ -89,10 +89,10 @@ const showLabel = computed(() => props.data.count > 1 || problem.value || props.
         <UButton
           class="flex cursor-pointer items-center gap-1 rounded-full border bg-default px-1.5 text-xs"
           :class="problem ? 'border-error text-error' : 'border-default text-muted'"
-          @click="emit('select')"
           :padded="false"
           :variant="problem ? 'solid' : 'ghost'"
           :color="problem ? 'error' : 'neutral'"
+          @click="emit('select')"
         >
           <UIcon v-if="data.violations.length" name="i-lucide-triangle-alert" class="size-3" />
           <UIcon v-else-if="cycleBreaker" name="i-lucide-refresh-cw" class="size-3" />
