@@ -1,0 +1,5 @@
+{
+  "name": "standalone",
+  "private": true,
+  "type": "module"
+}

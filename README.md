@@ -41,6 +41,7 @@ Override both with `nuxt-highlevel.json` in the analyzed root. Globs match the p
 ## Develop
 
 ```sh
-NUXT_TARGET_ROOT=$PWD/test/fixtures/mono vp run dev
+NUXT_TARGET_ROOT=$PWD/test/fixtures/mono vp run dev         # pnpm monorepo
+NUXT_TARGET_ROOT=$PWD/test/fixtures/standalone vp run dev   # single app with local layers/modules
 vp run check    # lint, typecheck, tests
 ```
