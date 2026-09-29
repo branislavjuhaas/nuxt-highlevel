@@ -86,15 +86,18 @@ const showLabel = computed(() => props.data.count > 1 || problem.value || props.
       :style="{ transform: `translate(-50%, -50%) translate(${path[1]}px, ${path[2]}px)` }"
     >
       <UTooltip :text="edgeSummary(data)">
-        <button
+        <UButton
           class="flex cursor-pointer items-center gap-1 rounded-full border bg-default px-1.5 text-xs"
           :class="problem ? 'border-error text-error' : 'border-default text-muted'"
           @click="emit('select')"
+          :padded="false"
+          :variant="problem ? 'solid' : 'ghost'"
+          :color="problem ? 'red' : 'gray'"
         >
           <UIcon v-if="data.violations.length" name="i-lucide-triangle-alert" class="size-3" />
           <UIcon v-else-if="cycleBreaker" name="i-lucide-refresh-cw" class="size-3" />
           {{ data.count }}
-        </button>
+        </UButton>
       </UTooltip>
     </div>
   </EdgeLabelRenderer>

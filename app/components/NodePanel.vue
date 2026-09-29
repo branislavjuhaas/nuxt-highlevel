@@ -219,10 +219,12 @@ const FILE_LIMIT = 200;
           </h3>
           <ul class="space-y-0.5">
             <li v-for="e in list.edges" :key="e.id">
-              <button
+              <UButton
                 class="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-elevated"
                 :title="`${pathOf(list.other(e))}\n${edgeSummary(e)}`"
                 @click="emit('focus', list.other(e))"
+                variant="ghost"
+                color="gray"
               >
                 <span
                   class="truncate"
@@ -230,7 +232,7 @@ const FILE_LIMIT = 200;
                   >{{ label(list.other(e)) }}</span
                 >
                 <span class="ml-auto shrink-0 text-sm text-muted">{{ e.count }}</span>
-              </button>
+              </UButton>
             </li>
           </ul>
         </section>
@@ -245,13 +247,15 @@ const FILE_LIMIT = 200;
               :key="file.id"
               class="flex items-center gap-1"
             >
-              <button
+              <UButton
                 class="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left hover:bg-elevated"
                 :title="file.path"
                 @click="emit('focus', file.id)"
+                variant="ghost"
+                color="gray"
               >
                 {{ file.label }}
-              </button>
+              </UButton>
             </li>
           </ul>
           <p v-if="files.length > FILE_LIMIT" class="mt-1 text-sm text-muted">
@@ -286,23 +290,29 @@ const FILE_LIMIT = 200;
                 {{ e.violation }}
               </p>
               <div>
-                <button
+                <UButton
                   class="text-left hover:underline"
                   :title="pathOf(e.from)"
                   @click="emit('focus', e.from)"
+                  variant="link"
+                  color="gray"
+                  :padded="false"
                 >
                   <PathText :path="endLabels(e)[0]" />
-                </button>
+                </UButton>
               </div>
               <div class="flex gap-1">
                 <span class="text-muted">→</span>
-                <button
+                <UButton
                   class="min-w-0 text-left hover:underline"
                   :title="pathOf(e.to)"
                   @click="emit('focus', e.to)"
+                  variant="link"
+                  color="gray"
+                  :padded="false"
                 >
                   <PathText :path="endLabels(e)[1]" />
-                </button>
+                </UButton>
               </div>
               <div
                 v-if="e.names?.length"
