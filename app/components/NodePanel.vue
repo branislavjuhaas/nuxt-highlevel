@@ -207,7 +207,7 @@ const FILE_LIMIT = 200
             <li
               v-for="file in files.slice(0, FILE_LIMIT)"
               :key="file.id"
-              class="group flex items-center gap-1"
+              class="flex items-center gap-1"
             >
               <button
                 class="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left hover:bg-elevated"
@@ -216,15 +216,6 @@ const FILE_LIMIT = 200
               >
                 {{ file.label }}
               </button>
-              <UButton
-                icon="i-lucide-square-pen"
-                color="neutral"
-                variant="ghost"
-                size="xs"
-                aria-label="Open in editor"
-                class="opacity-0 group-hover:opacity-100"
-                @click="open(file.path)"
-              />
             </li>
           </ul>
           <p
@@ -283,16 +274,6 @@ const FILE_LIMIT = 200
                 >
                   {{ label(e.to) }}
                 </button>
-                <UButton
-                  v-if="index.nodes.get(e.from)?.kind === 'file'"
-                  icon="i-lucide-square-pen"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  class="ml-auto"
-                  aria-label="Open source file in editor"
-                  @click="open(pathOf(e.from))"
-                />
               </div>
               <div
                 v-if="e.names?.length"
