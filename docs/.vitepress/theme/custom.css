@@ -1,0 +1,99 @@
+/*
+ * Home hero: name and screenshot share the first row, the headline, tagline
+ * and actions sit centered below. `display: contents` flattens VPHero's
+ * wrappers so their children become grid items.
+ */
+.VPHero.has-image .container {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "name"
+    "image"
+    "text"
+    "tagline"
+    "actions";
+  justify-items: center;
+  row-gap: 1.5rem;
+}
+
+.VPHero.has-image .container .heading .name,
+.VPHero.has-image .container .heading .text,
+.VPHero.has-image .container .tagline {
+  text-align: center;
+}
+
+.VPHero.has-image .main,
+.VPHero.has-image .heading {
+  display: contents;
+}
+
+.VPHero.has-image .container .heading .name {
+  grid-area: name;
+  margin: 0;
+}
+
+.VPHero.has-image .container .heading .text {
+  grid-area: text;
+  margin: 0;
+  max-width: 48rem;
+}
+
+.VPHero.has-image .container .tagline {
+  grid-area: tagline;
+  margin: 0;
+  padding-top: 0;
+  max-width: 40rem;
+}
+
+.VPHero.has-image .container .actions {
+  grid-area: actions;
+  justify-content: center;
+  padding-top: 0.5rem;
+}
+
+/* Wide app screenshot instead of the default square logo */
+.VPHero.has-image .image {
+  grid-area: image;
+  margin: 0;
+  width: 100%;
+}
+
+.VPHero.has-image .image-container {
+  width: auto;
+  height: auto;
+  transform: none;
+}
+
+.VPHero.has-image .image-bg {
+  display: none;
+}
+
+.VPHero.has-image .image-src {
+  position: static;
+  transform: none;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  max-height: none;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+}
+
+@media (min-width: 960px) {
+  .VPHero.has-image .container {
+    grid-template-columns: 2fr 3fr;
+    grid-template-areas:
+      "name image"
+      "text text"
+      "tagline tagline"
+      "actions actions";
+    align-items: center;
+    column-gap: 3rem;
+    row-gap: 1rem;
+  }
+
+  .VPHero.has-image .container .heading .text {
+    margin-top: 2.5rem;
+  }
+}

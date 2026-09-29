@@ -5,6 +5,9 @@ hero:
   name: "Nuxt Highlevel"
   text: "Architecture visibility for Nuxt monorepos and apps"
   tagline: Drill down from apps, layers, modules, and packages all the way to individual files with auto-import and tier rule intelligence.
+  image:
+    src: /screenshot-file-graph.png
+    alt: "Nuxt Highlevel file graph: folders of a standalone app with dependency edges to sibling layers and modules"
   actions:
     - theme: brand
       text: Get Started
