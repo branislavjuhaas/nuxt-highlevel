@@ -199,15 +199,15 @@ const FILE_LIMIT = 200;
             </template>
           </template>
         </UAlert>
-        <UTooltip :text="violation">
-          <UAlert
-            :key="violation"
-            icon="i-lucide-triangle-alert"
-            color="error"
-            variant="subtle"
-            description="See the red edges."
-          />
-        </UTooltip>
+        <UAlert
+          v-for="violation in violations"
+          :key="violation"
+          icon="i-lucide-triangle-alert"
+          color="error"
+          variant="subtle"
+          :title="violation"
+          description="See the red edges."
+        />
 
         <section
           v-for="list in [
@@ -226,7 +226,7 @@ const FILE_LIMIT = 200;
                   class="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-elevated"
                   @click="emit('focus', list.other(e))"
                   variant="ghost"
-                  color="gray"
+                  color="neutral"
                 >
                   <span
                     class="truncate"
@@ -255,7 +255,7 @@ const FILE_LIMIT = 200;
                   class="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left hover:bg-elevated"
                   @click="emit('focus', file.id)"
                   variant="ghost"
-                  color="gray"
+                  color="neutral"
                 >
                   {{ file.label }}
                 </UButton>
@@ -269,12 +269,21 @@ const FILE_LIMIT = 200;
       </template>
 
       <template v-else-if="edge">
-        <UTooltip :text="violation">
-          <UAlert :key="violation" icon="i-lucide-triangle-alert" color="error" variant="subtle" />
-        </UTooltip>
-        <UTooltip text="Part of a dependency cycle">
-          <UAlert v-if="edge.inCycle" icon="i-lucide-refresh-cw" color="error" variant="subtle" />
-        </UTooltip>
+        <UAlert
+          v-for="violation in edge.violations"
+          :key="violation"
+          icon="i-lucide-triangle-alert"
+          color="error"
+          variant="subtle"
+          :title="violation"
+        />
+        <UAlert
+          v-if="edge.inCycle"
+          icon="i-lucide-refresh-cw"
+          color="error"
+          variant="subtle"
+          title="Part of a dependency cycle"
+        />
         <section>
           <h3 class="mb-1.5 text-sm font-semibold tracking-wide text-muted uppercase">
             Dependencies ({{ edge.edges.length }})
@@ -290,7 +299,7 @@ const FILE_LIMIT = 200;
                     class="text-left hover:underline"
                     @click="emit('focus', e.from)"
                     variant="link"
-                    color="gray"
+                    color="neutral"
                     :padded="false"
                   >
                     <PathText :path="endLabels(e)[0]" />
@@ -304,7 +313,7 @@ const FILE_LIMIT = 200;
                     class="min-w-0 text-left hover:underline"
                     @click="emit('focus', e.to)"
                     variant="link"
-                    color="gray"
+                    color="neutral"
                     :padded="false"
                   >
                     <PathText :path="endLabels(e)[1]" />
@@ -316,6 +325,8 @@ const FILE_LIMIT = 200;
                 class="mt-0.5 font-mono text-sm wrap-break-word text-muted"
               >
                 <UTooltip
+                  v-for="name in e.names"
+                  :key="name"
                   :text="e.auto?.includes(name) ? 'auto-imported, no import statement' : undefined"
                 >
                   <span

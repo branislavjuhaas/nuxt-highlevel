@@ -118,7 +118,7 @@ const sections = computed(() =>
               :class="{ 'bg-elevated': node.id === selectedId }"
               @click="emit('focus', node.id)"
               variant="ghost"
-              color="gray"
+              color="neutral"
             >
               <span class="flex items-center gap-1.5">
                 <UIcon :name="nodeIcon(node)" class="size-4 shrink-0 text-muted" />

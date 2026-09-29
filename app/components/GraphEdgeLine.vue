@@ -92,7 +92,7 @@ const showLabel = computed(() => props.data.count > 1 || problem.value || props.
           @click="emit('select')"
           :padded="false"
           :variant="problem ? 'solid' : 'ghost'"
-          :color="problem ? 'red' : 'gray'"
+          :color="problem ? 'error' : 'neutral'"
         >
           <UIcon v-if="data.violations.length" name="i-lucide-triangle-alert" class="size-3" />
           <UIcon v-else-if="cycleBreaker" name="i-lucide-refresh-cw" class="size-3" />
