@@ -5,10 +5,10 @@ Architecture view of a Nuxt (mono)repo: apps, layers, modules and packages, dril
 ```sh
 nuxt-highlevel                      # analyze cwd, start server, open browser
 nuxt-highlevel ../other-repo        # analyze another root
-nuxt-highlevel --port 4777 --no-open --prepare
+nuxt-highlevel --port 4777 --no-open
 ```
 
-`--prepare` runs the target's own `nuxi prepare` where `.nuxt/` is missing. Without `.nuxt/`, auto-import edges are missing and the UI warns about it.
+Before each analysis (startup and Refresh), every app in the target runs its own `nuxi prepare`, so new composables and components show up. Layers and modules borrow the registry of the app using them. Auto-imports are regular import edges. If an app can't be prepared (Nuxt not installed), its auto-imported dependencies are missing and the UI warns about it.
 
 ## Install
 
