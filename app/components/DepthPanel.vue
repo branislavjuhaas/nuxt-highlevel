@@ -125,9 +125,11 @@ const sections = computed(() =>
                 <span class="truncate font-medium text-highlighted">{{ node.label }}</span>
                 <span class="ml-auto shrink-0 text-xs text-dimmed">{{ node.loc }} LOC</span>
               </span>
-              <span class="block truncate font-mono text-xs text-muted" :title="node.path">
-                <PathText :path="node.path" />
-              </span>
+              <UTooltip :text="node.path">
+                <span class="block truncate font-mono text-xs text-muted">
+                  <PathText :path="node.path" />
+                </span>
+              </UTooltip>
               <span class="block text-sm text-muted">{{ summary }}</span>
             </UButton>
           </li>

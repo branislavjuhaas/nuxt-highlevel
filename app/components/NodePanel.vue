@@ -73,9 +73,11 @@ const FILE_LIMIT = 200;
               {{ node.label }}
             </h2>
           </div>
-          <p class="mt-1 font-mono text-sm text-muted" :title="node.path">
-            <PathText :path="node.path" />
-          </p>
+          <UTooltip :text="node.path">
+            <p class="mt-1 font-mono text-sm text-muted">
+              <PathText :path="node.path" />
+            </p>
+          </UTooltip>
         </template>
         <template v-else-if="edge">
           <h2 class="font-semibold text-highlighted">
@@ -197,15 +199,15 @@ const FILE_LIMIT = 200;
             </template>
           </template>
         </UAlert>
-        <UAlert
-          v-for="violation in violations"
-          :key="violation"
-          icon="i-lucide-triangle-alert"
-          color="error"
-          variant="subtle"
-          :title="violation"
-          description="See the red edges."
-        />
+        <UTooltip :text="violation">
+          <UAlert
+            :key="violation"
+            icon="i-lucide-triangle-alert"
+            color="error"
+            variant="subtle"
+            description="See the red edges."
+          />
+        </UTooltip>
 
         <section
           v-for="list in [
@@ -219,20 +221,21 @@ const FILE_LIMIT = 200;
           </h3>
           <ul class="space-y-0.5">
             <li v-for="e in list.edges" :key="e.id">
-              <UButton
-                class="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-elevated"
-                :title="`${pathOf(list.other(e))}\n${edgeSummary(e)}`"
-                @click="emit('focus', list.other(e))"
-                variant="ghost"
-                color="gray"
-              >
-                <span
-                  class="truncate"
-                  :class="e.violations.length || e.inCycle ? 'text-error' : ''"
-                  >{{ label(list.other(e)) }}</span
+              <UTooltip :text="`${pathOf(list.other(e))}\n${edgeSummary(e)}`">
+                <UButton
+                  class="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-elevated"
+                  @click="emit('focus', list.other(e))"
+                  variant="ghost"
+                  color="gray"
                 >
-                <span class="ml-auto shrink-0 text-sm text-muted">{{ e.count }}</span>
-              </UButton>
+                  <span
+                    class="truncate"
+                    :class="e.violations.length || e.inCycle ? 'text-error' : ''"
+                    >{{ label(list.other(e)) }}</span
+                  >
+                  <span class="ml-auto shrink-0 text-sm text-muted">{{ e.count }}</span>
+                </UButton>
+              </UTooltip>
             </li>
           </ul>
         </section>
@@ -247,15 +250,16 @@ const FILE_LIMIT = 200;
               :key="file.id"
               class="flex items-center gap-1"
             >
-              <UButton
-                class="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left hover:bg-elevated"
-                :title="file.path"
-                @click="emit('focus', file.id)"
-                variant="ghost"
-                color="gray"
-              >
-                {{ file.label }}
-              </UButton>
+              <UTooltip :text="file.path">
+                <UButton
+                  class="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left hover:bg-elevated"
+                  @click="emit('focus', file.id)"
+                  variant="ghost"
+                  color="gray"
+                >
+                  {{ file.label }}
+                </UButton>
+              </UTooltip>
             </li>
           </ul>
           <p v-if="files.length > FILE_LIMIT" class="mt-1 text-sm text-muted">
@@ -265,21 +269,12 @@ const FILE_LIMIT = 200;
       </template>
 
       <template v-else-if="edge">
-        <UAlert
-          v-for="violation in edge.violations"
-          :key="violation"
-          icon="i-lucide-triangle-alert"
-          color="error"
-          variant="subtle"
-          :title="violation"
-        />
-        <UAlert
-          v-if="edge.inCycle"
-          icon="i-lucide-refresh-cw"
-          color="error"
-          variant="subtle"
-          title="Part of a dependency cycle"
-        />
+        <UTooltip :text="violation">
+          <UAlert :key="violation" icon="i-lucide-triangle-alert" color="error" variant="subtle" />
+        </UTooltip>
+        <UTooltip text="Part of a dependency cycle">
+          <UAlert v-if="edge.inCycle" icon="i-lucide-refresh-cw" color="error" variant="subtle" />
+        </UTooltip>
         <section>
           <h3 class="mb-1.5 text-sm font-semibold tracking-wide text-muted uppercase">
             Dependencies ({{ edge.edges.length }})
@@ -290,52 +285,56 @@ const FILE_LIMIT = 200;
                 {{ e.violation }}
               </p>
               <div>
-                <UButton
-                  class="text-left hover:underline"
-                  :title="pathOf(e.from)"
-                  @click="emit('focus', e.from)"
-                  variant="link"
-                  color="gray"
-                  :padded="false"
-                >
-                  <PathText :path="endLabels(e)[0]" />
-                </UButton>
+                <UTooltip :text="pathOf(e.from)">
+                  <UButton
+                    class="text-left hover:underline"
+                    @click="emit('focus', e.from)"
+                    variant="link"
+                    color="gray"
+                    :padded="false"
+                  >
+                    <PathText :path="endLabels(e)[0]" />
+                  </UButton>
+                </UTooltip>
               </div>
               <div class="flex gap-1">
                 <span class="text-muted">→</span>
-                <UButton
-                  class="min-w-0 text-left hover:underline"
-                  :title="pathOf(e.to)"
-                  @click="emit('focus', e.to)"
-                  variant="link"
-                  color="gray"
-                  :padded="false"
-                >
-                  <PathText :path="endLabels(e)[1]" />
-                </UButton>
+                <UTooltip :text="pathOf(e.to)">
+                  <UButton
+                    class="min-w-0 text-left hover:underline"
+                    @click="emit('focus', e.to)"
+                    variant="link"
+                    color="gray"
+                    :padded="false"
+                  >
+                    <PathText :path="endLabels(e)[1]" />
+                  </UButton>
+                </UTooltip>
               </div>
               <div
                 v-if="e.names?.length"
                 class="mt-0.5 font-mono text-sm wrap-break-word text-muted"
               >
-                <span
-                  v-for="name in e.names"
-                  :key="name"
-                  class="after:content-[',_'] last:after:content-none"
-                  :class="{ 'text-primary': e.auto?.includes(name) }"
-                  :title="e.auto?.includes(name) ? 'auto-imported, no import statement' : undefined"
-                  >{{ name }}</span
+                <UTooltip
+                  :text="e.auto?.includes(name) ? 'auto-imported, no import statement' : undefined"
                 >
+                  <span
+                    class="after:content-[',_'] last:after:content-none"
+                    :class="{ 'text-primary': e.auto?.includes(name) }"
+                    >{{ name }}</span
+                  >
+                </UTooltip>
               </div>
               <div class="mt-1.5 flex items-center gap-1.5">
-                <UButton
-                  v-if="e.lines?.length"
-                  :label="linesLabel(e.lines)"
-                  icon="i-lucide-code"
-                  size="xs"
-                  :title="`Show in ${pathOf(e.from)}`"
-                  @click="showCode({ path: pathOf(e.from), lines: e.lines, names: e.names })"
-                />
+                <UTooltip :text="`Show in ${pathOf(e.from)}`">
+                  <UButton
+                    v-if="e.lines?.length"
+                    :label="linesLabel(e.lines)"
+                    icon="i-lucide-code"
+                    size="xs"
+                    @click="showCode({ path: pathOf(e.from), lines: e.lines, names: e.names })"
+                  />
+                </UTooltip>
                 <UTooltip
                   v-if="e.auto?.length"
                   :text="
