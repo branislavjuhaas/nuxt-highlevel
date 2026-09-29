@@ -85,7 +85,7 @@ const edges = computed<Edge[]>(() => props.view.edges.map((edge) => {
     type: 'graph',
     source: edge.source,
     target: edge.target,
-    markerEnd: { type: MarkerType.ArrowClosed, color, width: 14, height: 14, markerUnits: 'userSpaceOnUse' },
+    markerEnd: { type: MarkerType.ArrowClosed, color, width: 28, height: 28, markerUnits: 'userSpaceOnUse' },
     data: { ...edge, selected: edge.id === props.selectedId, direction: direction.value, backwards }
   }
 }))
