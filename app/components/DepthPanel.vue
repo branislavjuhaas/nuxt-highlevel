@@ -37,23 +37,58 @@ const sections = computed(() => [
     </div>
 
     <div class="flex-1 space-y-5 overflow-y-auto p-4">
-      <div class="space-y-2 text-sm text-muted">
-        <p>
-          A module's interface is the names other code imports from it. Everything behind them is code its callers
-          never have to read.
-        </p>
-        <p>
-          A <span class="font-medium text-highlighted">deep</span> module hides a lot of code behind a few names:
-          callers learn little and get a lot, and its inside can change without breaking them. A
-          <span class="font-medium text-highlighted">shallow</span> one is nearly as big outside as inside, an extra
-          layer that saves its callers almost no work. Merge it into the code that uses it, or give it more to do.
-        </p>
-        <p class="text-xs text-dimmed">
-          Packages are rated by lines of code per name used from outside: deep from {{ DEEP_LOC_PER_EXPORT }},
-          shallow under {{ SHALLOW_LOC_PER_EXPORT }}. Areas by the share of their files used from outside: deep up to
-          {{ DEEP_SURFACE_RATIO * 100 }}%, shallow from {{ SHALLOW_SURFACE_RATIO * 100 }}%.
-        </p>
-      </div>
+      <details class="group text-sm text-muted">
+        <summary class="flex cursor-pointer list-none items-center gap-1.5 font-medium text-default [&::-webkit-details-marker]:hidden">
+          <UIcon
+            name="i-lucide-chevron-right"
+            class="size-4 transition-transform group-open:rotate-90"
+          />
+          What is module depth?
+        </summary>
+        <dl class="mt-2 space-y-2 pl-5.5">
+          <div>
+            <dt class="font-medium text-highlighted">
+              Interface
+            </dt>
+            <dd>The names other code imports from a module. The code behind them, callers never have to read.</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-highlighted">
+              Deep
+            </dt>
+            <dd>
+              A lot of code behind a few names. Callers learn little and get a lot, and the inside can change
+              without breaking them.
+            </dd>
+          </div>
+          <div>
+            <dt class="font-medium text-highlighted">
+              Shallow
+            </dt>
+            <dd>
+              Nearly as big outside as inside, an extra layer that saves callers almost no work. Merge it into the
+              code that uses it, or give it more to do.
+            </dd>
+          </div>
+          <div>
+            <dt class="font-medium text-highlighted">
+              How it's rated
+            </dt>
+            <dd>
+              <ul class="list-disc pl-4">
+                <li>
+                  Packages: lines of code per name used from outside, deep from {{ DEEP_LOC_PER_EXPORT }}, shallow
+                  under {{ SHALLOW_LOC_PER_EXPORT }}
+                </li>
+                <li>
+                  Areas: share of files used from outside, deep up to {{ DEEP_SURFACE_RATIO * 100 }}%, shallow from
+                  {{ SHALLOW_SURFACE_RATIO * 100 }}%
+                </li>
+              </ul>
+            </dd>
+          </div>
+        </dl>
+      </details>
       <p
         v-if="!sections.length"
         class="text-sm text-muted"
