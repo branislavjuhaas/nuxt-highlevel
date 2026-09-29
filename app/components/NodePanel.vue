@@ -33,6 +33,8 @@ function focusCycle(event: MouseEvent) {
   event.preventDefault()
   emit('focus', cycleFile.value.id)
 }
+// Per-row violations only add information when the rows don't all share the alert above.
+const rowViolations = computed(() => props.edge ? props.edge.violations.length > 1 || props.edge.edges.some(e => !e.violation) : false)
 const hint = computed(() => props.node && depthHint(props.node))
 const hasChildren = computed(() => props.node && (props.index.children.get(props.node.id)?.length ?? 0) > 0)
 
@@ -64,9 +66,6 @@ const FILE_LIMIT = 200
           <h2 class="font-semibold text-highlighted">
             {{ label(edge.source) }} → {{ label(edge.target) }}
           </h2>
-          <p class="mt-1 text-sm text-muted">
-            {{ edgeSummary(edge) }}
-          </p>
         </template>
       </div>
       <UButton
@@ -270,6 +269,13 @@ const FILE_LIMIT = 200
           variant="subtle"
           :title="violation"
         />
+        <UAlert
+          v-if="edge.inCycle"
+          icon="i-lucide-refresh-cw"
+          color="error"
+          variant="subtle"
+          title="Part of a dependency cycle"
+        />
         <section>
           <h3 class="mb-1.5 text-sm font-semibold tracking-wide text-muted uppercase">
             Dependencies ({{ edge.edges.length }})
@@ -280,31 +286,13 @@ const FILE_LIMIT = 200
               :key="i"
               class="rounded-md bg-elevated px-2 py-1.5"
             >
-              <div class="flex items-center gap-1.5">
-                <UTooltip
-                  v-if="e.auto?.length"
-                  :text="e.auto.length === e.names?.length ? 'Nuxt auto-import: used without an import statement' : 'Partly auto-imported: highlighted names have no import statement'"
-                >
-                  <UBadge
-                    label="auto-import"
-                    variant="subtle"
-                    color="primary"
-                    size="sm"
-                  />
-                </UTooltip>
-                <UBadge
-                  v-if="!e.auto?.length || e.auto.length < (e.names?.length ?? 0)"
-                  :label="e.kind"
-                  variant="outline"
-                  color="neutral"
-                  size="sm"
-                />
-                <span
-                  v-if="e.violation"
-                  class="text-sm text-error"
-                >{{ e.violation }}</span>
-              </div>
-              <div class="mt-1">
+              <p
+                v-if="rowViolations && e.violation"
+                class="mb-1 text-sm text-error"
+              >
+                {{ e.violation }}
+              </p>
+              <div>
                 <button
                   class="text-left hover:underline"
                   :title="pathOf(e.from)"
@@ -335,15 +323,34 @@ const FILE_LIMIT = 200
                   :title="e.auto?.includes(name) ? 'auto-imported, no import statement' : undefined"
                 >{{ name }}</span>
               </div>
-              <UButton
-                v-if="e.lines?.length"
-                :label="linesLabel(e.lines)"
-                icon="i-lucide-code"
-                size="xs"
-                class="mt-1.5"
-                :title="`Show in ${pathOf(e.from)}`"
-                @click="showCode({ path: pathOf(e.from), lines: e.lines, names: e.names })"
-              />
+              <div class="mt-1.5 flex items-center gap-1.5">
+                <UButton
+                  v-if="e.lines?.length"
+                  :label="linesLabel(e.lines)"
+                  icon="i-lucide-code"
+                  size="xs"
+                  :title="`Show in ${pathOf(e.from)}`"
+                  @click="showCode({ path: pathOf(e.from), lines: e.lines, names: e.names })"
+                />
+                <UTooltip
+                  v-if="e.auto?.length"
+                  :text="e.auto.length === e.names?.length ? 'Nuxt auto-import: used without an import statement' : 'Partly auto-imported: highlighted names have no import statement'"
+                >
+                  <UBadge
+                    label="auto-import"
+                    variant="subtle"
+                    color="primary"
+                    size="sm"
+                  />
+                </UTooltip>
+                <UBadge
+                  v-if="!e.auto?.length || e.auto.length < (e.names?.length ?? 0)"
+                  :label="e.kind"
+                  variant="outline"
+                  color="neutral"
+                  size="sm"
+                />
+              </div>
             </li>
           </ul>
         </section>
