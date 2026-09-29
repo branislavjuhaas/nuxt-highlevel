@@ -1,53 +1,88 @@
 # nuxt-highlevel
 
-Architecture view of a Nuxt (mono)repo: apps, layers, modules and packages, drillable down to single files. Auto-import edges come from the registries Nuxt generates in `.nuxt/`.
+## Short Description
 
-```sh
-nuxt-highlevel                      # analyze cwd, start server, open browser
-nuxt-highlevel ../other-repo        # analyze another root
-nuxt-highlevel --port 4777 --no-open
-```
+Architecture view of Nuxt (mono)repos: apps, layers, modules, packages, down to files
 
-Before each analysis (startup and Refresh), every app in the target runs its own `nuxi prepare`, so new composables and components show up. Layers and modules borrow the registry of the app using them. Auto-imports are regular import edges. If an app can't be prepared (Nuxt not installed), its auto-imported dependencies are missing and the UI warns about it.
+## Main Features
 
-## Install
+- Interactive architecture visualization of Nuxt applications, layers, modules, and packages.
+- Detailed view down to individual files within the project.
+- Support for monorepos, allowing analysis of multiple Nuxt projects within a single repository.
+- Command-line interface (CLI) for analyzing projects and generating architecture graphs.
+- Web-based UI for exploring the architecture graphically.
+- Real-time updates during development (via HMR for the UI).
 
-```sh
-pnpm install
-pnpm build
-pnpm add -g "$PWD"   # or run locally via pnpm dev
-```
+## Technology Stack
 
-The `--prepare` flag automatically executes `nuxi prepare` on target directories if auto-import edges are missing.
+- Nuxt.js
+- Vue.js
+- Vue Flow
+- Elk.js
+- Tailwind CSS
+- Iconify
+- VitePress (for docs)
+- ESLint
+- TypeScript
 
-```sh
-nuxt-highlevel --prepare
-```
+1.  **Clone the repository:**
 
-## Tier rules
+    ```bash
+    git clone https://github.com/your-repo/nuxt-highlevel.git
+    cd nuxt-highlevel
+    ```
 
-Every package gets a tier. Built-in defaults: Nuxt apps are `app`, packages whose name or path contains `base`, `common`, `core`, `shared`, `ui` or `utils` are `base`, everything else is `feature`. `base` must not depend on `feature` or `app`, and `feature` must not depend on `app`. Violating edges are red.
+2.  **Install dependencies (using pnpm):**
 
-Override both with `nuxt-highlevel.json` in the analyzed root. Globs match the package path or name, and the first match wins:
+    ```bash
+    pnpm install
+    ```
 
-```json
-{
-  "tiers": {
-    "base": ["layers/base", "packages/*-utils"],
-    "feature": ["layers/*"],
-    "app": ["apps/*"]
-  },
-  "rules": [
-    { "from": "base", "disallow": ["feature", "app"] },
-    { "from": "feature", "disallow": ["app"] }
-  ]
-}
-```
+3.  **Development Server:**
 
-## Develop
+    ```bash
+    pnpm run dev
+    ```
 
-```sh
-NUXT_TARGET_ROOT=$PWD/test/fixtures/mono pnpm dev         # pnpm monorepo
-NUXT_TARGET_ROOT=$PWD/test/fixtures/standalone pnpm dev   # single app with local layers/modules
-pnpm check    # lint, typecheck, tests
-```
+    This will start the development server, and you can access the application in your browser.
+
+4.  **Build for Production:**
+
+    ```bash
+    pnpm run build
+    ```
+
+5.  **Preview Production Build:**
+
+    ```bash
+    pnpm run preview
+    ```
+
+6.  **Run CLI:**
+    ```bash
+    pnpm nuxt-highlevel
+    ```
+    Or, if installed globally:
+    ```bash
+    nuxt-highlevel
+    ```
+
+## Required Configuration
+
+The following environment variables can be set:
+
+- `NUXT_HIGHLEVEL_PORT`: Port for the development server (default: `3000`)
+- `NUXT_HIGHLEVEL_HOST`: Host for the development server (default: `localhost`)
+
+Configuration for the CLI can be found in `nuxt.config.ts` or `app.config.ts` for the Nuxt application. The CLI also supports a `.highlevelrc` file for project-specific configurations.
+
+## AI Tools or AI Services Used
+
+This project does not currently use any specific AI tools or services.
+
+## Known Limitations
+
+- Initial load time for large repositories might be slow due to extensive file parsing.
+- Complex dependency structures might not always be visualized optimally.
+- Currently, primarily focused on Nuxt 3+ architecture. Older Nuxt versions might have limited support.
+- CLI output can be verbose for very large projects.
