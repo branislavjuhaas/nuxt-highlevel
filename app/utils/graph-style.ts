@@ -59,12 +59,32 @@ export function edgeSummary(edge: ViewEdge) {
   return [parts.join(', '), ...edge.violations, ...(edge.inCycle ? ['part of a cycle'] : [])].join(' · ')
 }
 
-/** Hint about module depth: small surface over many files is good, the reverse is shallow. */
-export function depthHint(node: GraphNode) {
-  if (node.kind === 'file' || node.files < 4) return
+export type DepthTone = 'deep' | 'shallow' | 'neutral'
+
+/** Lines of code per name used from outside, the bounds of a deep and a shallow package. */
+const DEEP_LOC_PER_EXPORT = 60
+const SHALLOW_LOC_PER_EXPORT = 20
+
+const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
+
+/**
+ * Hint about module depth: a small interface over a lot of code is good, the reverse is shallow.
+ * Packages other than the app always get one, measured by names used from outside against lines of code.
+ * Areas get one only when they're big enough and imported from outside, measured in files.
+ */
+export function depthHint(node: GraphNode): { tone: DepthTone, text: string } | undefined {
+  if (node.kind === 'package' && node.packageKind !== 'app') {
+    if (!node.exports) return { tone: 'neutral', text: 'No code imported from outside, it only contributes through Nuxt (pages, plugins, config, …)' }
+    const interfaceText = `${plural(node.exports, 'name')} used from outside`
+    const perExport = node.loc / node.exports
+    if (perExport >= DEEP_LOC_PER_EXPORT) return { tone: 'deep', text: `Deep: ${interfaceText}, backed by ${plural(node.loc, 'line')}` }
+    if (perExport < SHALLOW_LOC_PER_EXPORT) return { tone: 'shallow', text: `Shallow: ${interfaceText}, backed by only ${plural(node.loc, 'line')}` }
+    return { tone: 'neutral', text: `${interfaceText}, backed by ${plural(node.loc, 'line')}` }
+  }
+  if (node.kind !== 'area' || node.files < 4 || !node.surface) return
   const ratio = node.surface / node.files
-  if (ratio <= 0.25) return { deep: true, text: `Deep: only ${node.surface} of ${node.files} files are used from outside` }
-  if (ratio >= 0.75) return { deep: false, text: `Shallow: ${node.surface} of ${node.files} files are used from outside` }
+  if (ratio <= 0.25) return { tone: 'deep', text: `Deep: only ${node.surface} of ${node.files} files are used from outside` }
+  if (ratio >= 0.75) return { tone: 'shallow', text: `Shallow: ${node.surface} of ${node.files} files are used from outside` }
 }
 
 const SHORT_PATH = 40

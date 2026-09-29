@@ -84,8 +84,9 @@ describe('analyzeRepo', () => {
   it('computes metrics', () => {
     const utils = model.nodes.find(n => n.id === 'pkg:packages/utils')!
     expect(utils.files).toBe(3)
-    // only src/index.ts is used from outside
+    // only src/index.ts is used from outside, for formatPrice and sum
     expect(utils.surface).toBe(1)
+    expect(utils.exports).toBe(2)
     expect(utils.fanOut).toBe(0)
     expect(utils.fanIn).toBe(2)
   })

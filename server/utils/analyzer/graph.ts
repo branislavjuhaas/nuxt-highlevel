@@ -91,8 +91,8 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
   }
 
   const nodes = new Map<string, GraphNode>()
-  const addNode = (node: Omit<GraphNode, 'files' | 'loc' | 'surface' | 'fanIn' | 'fanOut' | 'inCycle'>) => {
-    const full: GraphNode = { ...node, files: 0, loc: 0, surface: 0, fanIn: 0, fanOut: 0, inCycle: false }
+  const addNode = (node: Omit<GraphNode, 'files' | 'loc' | 'surface' | 'exports' | 'fanIn' | 'fanOut' | 'inCycle'>) => {
+    const full: GraphNode = { ...node, files: 0, loc: 0, surface: 0, exports: 0, fanIn: 0, fanOut: 0, inCycle: false }
     nodes.set(node.id, full)
     return full
   }
@@ -234,6 +234,7 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
   const fanOut = new Map<string, Set<string>>()
   const fanIn = new Map<string, Set<string>>()
   const surface = new Map<string, Set<string>>()
+  const exports = new Map<string, Set<string>>()
   const add = (map: Map<string, Set<string>>, key: string, value: string) => {
     if (!map.has(key)) map.set(key, new Set())
     map.get(key)!.add(value)
@@ -254,7 +255,10 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
       if (nodes.get(from[level]!)!.kind !== 'file') add(fanOut, from[level]!, to[level]!)
       if (nodes.get(to[level]!)!.kind !== 'file') add(fanIn, to[level]!, from[level]!)
       if (edge.kind === 'import') {
-        for (const container of to.slice(level, -1)) add(surface, container, edge.to)
+        for (const container of to.slice(level, -1)) {
+          add(surface, container, edge.to)
+          for (const name of edge.names?.length ? edge.names : ['*']) add(exports, container, `${edge.to}#${name}`)
+        }
       }
     }
   }
@@ -262,6 +266,7 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
     node.fanOut = fanOut.get(node.id)?.size ?? 0
     node.fanIn = fanIn.get(node.id)?.size ?? 0
     node.surface = node.kind === 'file' ? Math.min(node.fanIn, 1) : surface.get(node.id)?.size ?? 0
+    node.exports = exports.get(node.id)?.size ?? 0
   }
 
   const fileEdges = new Map<string, Set<string>>()

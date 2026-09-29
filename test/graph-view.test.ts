@@ -54,7 +54,7 @@ describe('filesOf', () => {
 
 describe('topLevel', () => {
   const node = (id: string, kind: GraphNode['kind'], parent: string | null): GraphNode =>
-    ({ id, kind, label: id, parent, path: '.', files: 0, loc: 0, surface: 0, fanIn: 0, fanOut: 0, inCycle: false })
+    ({ id, kind, label: id, parent, path: '.', files: 0, loc: 0, surface: 0, exports: 0, fanIn: 0, fanOut: 0, inCycle: false })
   const single = indexGraph({ nodes: [node('repo', 'repo', null), node('pkg:.', 'package', 'repo')], edges: [] } as unknown as GraphModel)
 
   it('starts at the repo when it has several packages', () => {

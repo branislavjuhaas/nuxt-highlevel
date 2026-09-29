@@ -148,7 +148,8 @@ const FILE_LIMIT = 200
             v-for="metric in [
               { label: 'Files', value: node.files },
               { label: 'LOC', value: node.loc },
-              { label: 'Used from outside', value: node.kind === 'file' ? '–' : node.surface },
+              { label: 'Files used from outside', value: node.kind === 'file' ? '–' : node.surface },
+              { label: 'Names used from outside', value: node.kind === 'file' ? '–' : node.exports },
               { label: 'Fan-in', value: node.fanIn },
               { label: 'Fan-out', value: node.fanOut }
             ]"
@@ -166,8 +167,8 @@ const FILE_LIMIT = 200
 
         <UAlert
           v-if="hint"
-          :icon="hint.deep ? 'i-lucide-gem' : 'i-lucide-layers-2'"
-          :color="hint.deep ? 'success' : 'neutral'"
+          :icon="{ deep: 'i-lucide-gem', shallow: 'i-lucide-layers-2', neutral: 'i-lucide-box' }[hint.tone]"
+          :color="hint.tone === 'deep' ? 'success' : 'neutral'"
           variant="subtle"
           :description="hint.text"
         />

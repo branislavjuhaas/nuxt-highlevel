@@ -23,6 +23,8 @@ export interface GraphNode {
   loc: number
   /** Files inside this node used from outside of it. */
   surface: number
+  /** Distinct names inside this node imported from outside of it. */
+  exports: number
   /** Distinct nodes of the same kind this node depends on / is used by. */
   fanOut: number
   fanIn: number
