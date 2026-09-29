@@ -25,3 +25,4 @@ logs
 
 # Personal Claude instructions
 CLAUDE.local.md
+.vitest/

@@ -1,8 +1,7 @@
 {
   "name": "nuxt-highlevel",
-  "description": "Architecture view of Nuxt (mono)repos: apps, layers, modules, packages, down to files",
   "private": true,
-  "type": "module",
+  "description": "Architecture view of Nuxt (mono)repos: apps, layers, modules, packages, down to files",
   "bin": {
     "nuxt-highlevel": "./bin/nuxt-highlevel.mjs"
   },
@@ -10,9 +9,7 @@
     "bin",
     ".output"
   ],
-  "engines": {
-    "node": ">=24"
-  },
+  "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -21,8 +18,8 @@
     "prepack": "nuxt build",
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
-    "test": "vitest run",
-    "check": "eslint . && nuxt typecheck && vitest run",
+    "test": "vp test run",
+    "check": "eslint . && nuxt typecheck && vp test run",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
@@ -59,9 +56,12 @@
     "eslint": "^10.11.0",
     "eslint-plugin-better-tailwindcss": "^4.7.0",
     "typescript": "^6.0.3",
+    "vite-plus": "catalog:",
     "vitepress": "^2.0.0-alpha.20",
-    "vitest": "^5.0.2",
     "vue-tsc": "^3.3.11"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "packageManager": "pnpm@12.6.0"
 }
