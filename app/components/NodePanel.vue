@@ -26,6 +26,13 @@ const outgoing = computed(() => props.view.edges.filter(e => e.source === props.
 const incoming = computed(() => props.view.edges.filter(e => e.target === props.node?.id))
 const violations = computed(() => [...new Set([...outgoing.value, ...incoming.value].flatMap(e => e.violations))])
 const files = computed(() => props.node ? filesOf(props.index, props.node.id) : [])
+const cycleFile = computed(() => files.value.find(f => f.inCycle))
+// A plain click also selects the file. Modified clicks keep the link's own behavior (new tab, …).
+function focusCycle(event: MouseEvent) {
+  if (!cycleFile.value || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+  event.preventDefault()
+  emit('focus', cycleFile.value.id)
+}
 const hint = computed(() => props.node && depthHint(props.node))
 const hasChildren = computed(() => props.node && (props.index.children.get(props.node.id)?.length ?? 0) > 0)
 
@@ -169,8 +176,22 @@ const FILE_LIMIT = 200
           icon="i-lucide-refresh-cw"
           color="error"
           variant="subtle"
-          :description="node.kind === 'file' ? 'This file is part of a dependency cycle.' : 'Contains files in a dependency cycle.'"
-        />
+        >
+          <template #description>
+            <template v-if="node.kind === 'file'">
+              This file is part of a dependency cycle.
+            </template>
+            <template v-else-if="cycleFile">
+              Contains files in a
+              <ULink
+                :to="{ query: { path: cycleFile.parent } }"
+                raw
+                class="text-error underline underline-offset-2 hover:text-error/75"
+                @click="focusCycle"
+              >dependency cycle</ULink>.
+            </template>
+          </template>
+        </UAlert>
         <UAlert
           v-for="violation in violations"
           :key="violation"
