@@ -125,7 +125,8 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
     nodes.set(node.id, full);
     return full;
   };
-  addNode({ id: "repo", kind: "repo", label: repoName || basename(root), parent: null, path: "." });
+  const repoLabel = repoName || basename(root);
+  addNode({ id: "repo", kind: "repo", label: repoLabel, parent: null, path: "." });
 
   const tiers = new Map<string, string>();
   for (const p of packages) {
@@ -134,7 +135,8 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
     addNode({
       id: p.id,
       kind: "package",
-      label: p.label,
+      // A root package named like the repo goes by its kind ("app"), unless it's the only one and the repo level is skipped.
+      label: p.label === repoLabel && packages.length > 1 ? p.kind : p.label,
       parent: "repo",
       path: p.relDir,
       packageKind: p.kind,
