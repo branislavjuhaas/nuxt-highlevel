@@ -15,9 +15,10 @@ const selectedId = ref<string>()
 const selectedEdge = ref<ViewEdge>()
 
 // Drill path lives in the URL, the last one per repo is restored on the next visit.
+const top = computed(() => index.value ? topLevel(index.value) : 'repo')
 const parentId = computed(() => {
   const path = route.query.path
-  return typeof path === 'string' && index.value?.nodes.has(path) ? path : 'repo'
+  return typeof path === 'string' && index.value?.nodes.has(path) && index.value.chain(path).includes(top.value) ? path : top.value
 })
 watch(model, (value) => {
   const saved = value && lastPath.value[value.root]
@@ -30,7 +31,7 @@ watch(parentId, (id) => {
 const view = computed(() => index.value && buildView(index.value, parentId.value, { includeAuto: includeAuto.value }))
 const selectedNode = computed(() => selectedId.value ? index.value?.nodes.get(selectedId.value) : undefined)
 
-const breadcrumb = computed<BreadcrumbItem[]>(() => index.value?.chain(parentId.value).map((id) => {
+const breadcrumb = computed<BreadcrumbItem[]>(() => index.value?.chain(parentId.value).slice(index.value.chain(top.value).length - 1).map((id) => {
   const node = index.value!.nodes.get(id)!
   return { label: node.label, icon: nodeIcon(node), to: { query: { path: id } } }
 }) ?? [])
@@ -74,7 +75,7 @@ function activate(id: string) {
 
 function goUp() {
   const parent = index.value?.nodes.get(parentId.value)?.parent
-  if (parent) drill(parent)
+  if (parent && parentId.value !== top.value) drill(parent)
 }
 
 const activeElement = useActiveElement()

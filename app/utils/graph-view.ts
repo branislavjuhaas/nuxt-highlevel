@@ -120,3 +120,9 @@ export function filesOf(index: GraphIndex, id: string): GraphNode[] {
   if (node.kind === 'file') return [node]
   return (index.children.get(id) ?? []).flatMap(child => filesOf(index, child.id))
 }
+
+/** Where browsing starts: the repo, or its only package, which would just repeat the repo. */
+export function topLevel(index: GraphIndex): string {
+  const packages = index.children.get('repo') ?? []
+  return packages.length === 1 ? packages[0]!.id : 'repo'
+}

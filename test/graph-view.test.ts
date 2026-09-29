@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildView, filesOf, indexGraph } from '../app/utils/graph-view'
+import type { GraphModel, GraphNode } from '../shared/types/graph'
+import { buildView, filesOf, indexGraph, topLevel } from '../app/utils/graph-view'
 import { analyzeRepo } from '../server/utils/analyzer/graph'
 import { fixtureRoot } from './fixture'
 
@@ -30,7 +31,7 @@ describe('buildView', () => {
   it('shows areas inside a package with ghosts for the outside', () => {
     const view = buildView(index, WEB, { includeAuto: true })
     const inside = view.nodes.filter(n => !n.ghost).map(n => n.node.label).sort()
-    expect(inside).toEqual(['app', 'components', 'composables', 'pages', 'server'])
+    expect(inside).toEqual(['app.vue', 'components', 'composables', 'pages', 'server'])
     const ghosts = view.nodes.filter(n => n.ghost).map(n => n.node.id).sort()
     expect(ghosts).toEqual(['pkg:apps/web/layers/promo', 'pkg:layers/base', 'pkg:layers/shop', 'pkg:packages/nuxt-foo', 'pkg:packages/utils'])
     // package-level declared edges start at the package itself and don't show here
@@ -54,5 +55,19 @@ describe('buildView', () => {
 describe('filesOf', () => {
   it('lists files below a node', () => {
     expect(filesOf(index, 'pkg:packages/utils').map(f => f.label)).toEqual(['format.ts', 'index.ts', 'math.ts'])
+  })
+})
+
+describe('topLevel', () => {
+  const node = (id: string, kind: GraphNode['kind'], parent: string | null): GraphNode =>
+    ({ id, kind, label: id, parent, path: '.', files: 0, loc: 0, surface: 0, fanIn: 0, fanOut: 0, inCycle: false })
+  const single = indexGraph({ nodes: [node('repo', 'repo', null), node('pkg:.', 'package', 'repo')], edges: [] } as unknown as GraphModel)
+
+  it('starts at the repo when it has several packages', () => {
+    expect(topLevel(index)).toBe('repo')
+  })
+
+  it('starts at the package when it is the only one', () => {
+    expect(topLevel(single)).toBe('pkg:.')
   })
 })

@@ -20,24 +20,21 @@ interface SourceFile {
   id: string
   abs: string
   pkg: WorkspacePackage
-  areaId: string
   isServer: boolean
   scan: FileScan
 }
 
-/** Splits a package-relative path into an area and the path inside it. */
-export function areaOf(relInPkg: string, isNuxt: boolean): { area: string, rest: string } {
+/** Splits a package-relative path into an area and the path inside it. Top-level files have no area. */
+export function areaOf(relInPkg: string, isNuxt: boolean): { area?: string, rest: string } {
   let path = relInPkg
-  let prefix = 'root'
   for (const srcDir of isNuxt ? ['app/', 'src/'] : ['src/']) {
     if (path.startsWith(srcDir)) {
-      prefix = srcDir.slice(0, -1)
       path = path.slice(srcDir.length)
       break
     }
   }
   const slash = path.indexOf('/')
-  if (slash === -1) return { area: prefix, rest: path }
+  if (slash === -1) return { rest: path }
   return { area: path.slice(0, slash), rest: path.slice(slash + 1) }
 }
 
@@ -130,9 +127,9 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
       if (owner(abs) !== p) continue
       const relInPkg = relative(p.dir, abs)
       const { area, rest } = areaOf(relInPkg, Boolean(p.nuxtConfig))
-      const areaId = `${p.id}/area:${area}`
-      if (!nodes.has(areaId)) {
-        addNode({ id: areaId, kind: 'area', label: area, parent: p.id, path: relative(root, join(p.dir, relInPkg.slice(0, relInPkg.length - rest.length))) || '.' })
+      const parent = area ? `${p.id}/area:${area}` : p.id
+      if (area && !nodes.has(parent)) {
+        addNode({ id: parent, kind: 'area', label: area, parent: p.id, path: relative(root, join(p.dir, relInPkg.slice(0, relInPkg.length - rest.length))) || '.' })
       }
       let scan: FileScan
       try {
@@ -141,9 +138,9 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
         warnings.push(`Could not parse ${relative(root, abs)}: ${(error as Error).message}`)
         continue
       }
-      const id = `${areaId}/file:${rest}`
-      addNode({ id, kind: 'file', label: fileLabel(rest), parent: areaId, path: relative(root, abs) })
-      const file = { id, abs, pkg: p, areaId, isServer: relInPkg.startsWith('server/'), scan }
+      const id = `${parent}/file:${rest}`
+      addNode({ id, kind: 'file', label: fileLabel(rest), parent, path: relative(root, abs) })
+      const file = { id, abs, pkg: p, isServer: relInPkg.startsWith('server/'), scan }
       files.push(file)
       fileByAbs.set(abs, file)
     }
@@ -240,13 +237,18 @@ export function analyzeRepo(rootInput: string, repoName?: string): GraphModel {
   for (const edge of edges) {
     const from = ancestors(edge.from)
     const to = ancestors(edge.to)
-    // Chains are [file, area, package] or [package]; align them from the top.
+    // Chains are [file, area, package], [file, package] or [package]; align them from the top.
+    // Top-level files sit one level higher than files in areas, so files are counted file to file.
     from.reverse()
     to.reverse()
+    if (nodes.get(edge.from)!.kind === 'file' && nodes.get(edge.to)!.kind === 'file') {
+      add(fanOut, edge.from, edge.to)
+      add(fanIn, edge.to, edge.from)
+    }
     for (let level = 0; level < Math.min(from.length, to.length); level++) {
       if (from[level] === to[level]) continue
-      add(fanOut, from[level]!, to[level]!)
-      add(fanIn, to[level]!, from[level]!)
+      if (nodes.get(from[level]!)!.kind !== 'file') add(fanOut, from[level]!, to[level]!)
+      if (nodes.get(to[level]!)!.kind !== 'file') add(fanIn, to[level]!, from[level]!)
       if (edge.kind === 'import' || edge.kind === 'auto') {
         for (const container of to.slice(level, -1)) add(surface, container, edge.to)
       }

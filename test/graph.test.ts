@@ -7,10 +7,13 @@ const WEB = 'pkg:apps/web'
 describe('areaOf', () => {
   it('strips the Nuxt srcDir and src/', () => {
     expect(areaOf('app/components/cart/Badge.vue', true)).toEqual({ area: 'components', rest: 'cart/Badge.vue' })
-    expect(areaOf('app/app.vue', true)).toEqual({ area: 'app', rest: 'app.vue' })
     expect(areaOf('server/api/hello.ts', true)).toEqual({ area: 'server', rest: 'api/hello.ts' })
-    expect(areaOf('src/format.ts', false)).toEqual({ area: 'src', rest: 'format.ts' })
-    expect(areaOf('module.ts', false)).toEqual({ area: 'root', rest: 'module.ts' })
+  })
+
+  it('has no area for files directly in the package or its source dir', () => {
+    expect(areaOf('app/app.vue', true)).toEqual({ rest: 'app.vue' })
+    expect(areaOf('src/format.ts', false)).toEqual({ rest: 'format.ts' })
+    expect(areaOf('module.ts', false)).toEqual({ rest: 'module.ts' })
   })
 })
 
@@ -22,8 +25,9 @@ describe('analyzeRepo', () => {
   it('builds the hierarchy with short labels', () => {
     const packages = model.nodes.filter(n => n.kind === 'package')
     expect(packages.map(n => n.label).sort()).toEqual(['base', 'nuxt-foo', 'promo', 'shop', 'utils', 'web'])
-    const areas = model.nodes.filter(n => n.parent === WEB).map(n => n.label).sort()
-    expect(areas).toEqual(['app', 'components', 'composables', 'pages', 'server'])
+    const children = model.nodes.filter(n => n.parent === WEB).map(n => n.label).sort()
+    expect(children).toEqual(['app.vue', 'components', 'composables', 'pages', 'server'])
+    expect(model.nodes.find(n => n.id === `${WEB}/file:app.vue`)!.path).toBe('apps/web/app/app.vue')
     const file = model.nodes.find(n => n.id === `${WEB}/area:components/file:TreeNode.vue`)!
     expect(file.label).toBe('TreeNode.vue')
     expect(file.path).toBe('apps/web/app/components/TreeNode.vue')
@@ -37,7 +41,7 @@ describe('analyzeRepo', () => {
     expect(has('file:index.vue', 'file:useCart.ts', 'auto')).toBe(true)
     expect(has('file:index.vue', 'area:runtime/file:composables/useFoo.ts', 'auto')).toBe(true)
     expect(has('file:index.vue', 'file:index.ts', 'import')).toBe(true)
-    expect(has('area:src/file:index.ts', 'file:format.ts', 'import')).toBe(true)
+    expect(has('pkg:packages/utils/file:index.ts', 'file:format.ts', 'import')).toBe(true)
     expect(has('file:api/hello.ts', 'file:utils/greet.ts', 'auto')).toBe(true)
     // borrowed registry: layer files resolve through the app extending them
     expect(has('file:ProductList.vue', 'file:useTheme.ts', 'auto')).toBe(true)
