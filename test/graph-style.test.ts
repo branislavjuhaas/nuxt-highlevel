@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { GraphNode } from '../shared/types/graph'
-import { depthHint, edgeEndLabels } from '../app/utils/graph-style'
+import { depthGroups, depthHint, edgeEndLabels } from '../app/utils/graph-style'
 
 describe('edgeEndLabels', () => {
   it('keeps labels that differ', () => {
@@ -43,5 +43,17 @@ describe('depthHint', () => {
     expect(depthHint(node({ kind: 'file' }))).toBeUndefined()
     expect(depthHint(node({ kind: 'area', files: 10, surface: 0, exports: 0 }))).toBeUndefined()
     expect(depthHint(node({ kind: 'area', files: 10, surface: 2 }))?.tone).toBe('deep')
+  })
+
+  it('groups rated nodes by tone, biggest first', () => {
+    const groups = depthGroups([
+      node({ id: 'small', loc: 300, exports: 1 }),
+      node({ id: 'big', loc: 900, exports: 2 }),
+      node({ id: 'thin', loc: 10, exports: 2 }),
+      node({ id: 'app', packageKind: 'app' })
+    ])
+    expect(groups.deep.map(e => e.node.id)).toEqual(['big', 'small'])
+    expect(groups.shallow.map(e => e.node.id)).toEqual(['thin'])
+    expect(groups.neutral).toEqual([])
   })
 })

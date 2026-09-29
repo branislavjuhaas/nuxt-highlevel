@@ -9,6 +9,7 @@ const { model, index, status, error, refreshing, reanalyze } = useGraph()
 
 const lastPath = useStorage<Record<string, string>>('nuxt-highlevel:last-path', {})
 const searchOpen = ref(false)
+const depthOpen = useStorage('nuxt-highlevel:depth-open', false)
 const { target: codeTarget } = useCodeViewer()
 const selectedId = ref<string>()
 const selectedEdge = ref<ViewEdge>()
@@ -141,6 +142,15 @@ whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
           />
         </template>
       </UButton>
+      <UButton
+        label="Depth"
+        icon="i-lucide-gem"
+        color="neutral"
+        :variant="depthOpen ? 'soft' : 'ghost'"
+        size="sm"
+        :aria-pressed="depthOpen"
+        @click="depthOpen = !depthOpen"
+      />
       <UTooltip :text="`Re-analyze ${model?.root ?? ''}`">
         <UButton
           icon="i-lucide-refresh-cw"
@@ -217,6 +227,13 @@ whenever(() => keys.Backspace!.value && !typing.value && !modalOpen.value, goUp)
         @focus="focus"
         @drill="drill"
         @close="clearSelection"
+      />
+      <DepthPanel
+        v-if="index && depthOpen"
+        :index="index"
+        :selected-id="selectedId"
+        @focus="focus"
+        @close="depthOpen = false"
       />
     </div>
     <CodeViewer />

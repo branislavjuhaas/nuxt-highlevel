@@ -87,6 +87,22 @@ export function depthHint(node: GraphNode): { tone: DepthTone, text: string } | 
   if (ratio >= 0.75) return { tone: 'shallow', text: `Shallow: ${node.surface} of ${node.files} files are used from outside` }
 }
 
+export interface DepthEntry {
+  node: GraphNode
+  text: string
+}
+
+/** Every node with a depth hint, grouped by tone, biggest first. */
+export function depthGroups(nodes: Iterable<GraphNode>) {
+  const groups: Record<DepthTone, DepthEntry[]> = { deep: [], shallow: [], neutral: [] }
+  for (const node of nodes) {
+    const hint = depthHint(node)
+    if (hint) groups[hint.tone].push({ node, text: hint.text })
+  }
+  for (const entries of Object.values(groups)) entries.sort((a, b) => b.node.loc - a.node.loc)
+  return groups
+}
+
 const SHORT_PATH = 40
 
 /**
