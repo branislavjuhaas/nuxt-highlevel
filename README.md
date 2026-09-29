@@ -13,9 +13,15 @@ Before each analysis (startup and Refresh), every app in the target runs its own
 ## Install
 
 ```sh
-vp install
-vp run build
-vp add -g "$PWD"   # a copy: rerun after every build
+pnpm install
+pnpm build
+pnpm add -g "$PWD"   # or run locally via pnpm dev
+```
+
+The `--prepare` flag automatically executes `nuxi prepare` on target directories if auto-import edges are missing.
+
+```sh
+nuxt-highlevel --prepare
 ```
 
 ## Tier rules
@@ -41,7 +47,7 @@ Override both with `nuxt-highlevel.json` in the analyzed root. Globs match the p
 ## Develop
 
 ```sh
-NUXT_TARGET_ROOT=$PWD/test/fixtures/mono vp run dev         # pnpm monorepo
-NUXT_TARGET_ROOT=$PWD/test/fixtures/standalone vp run dev   # single app with local layers/modules
-vp run check    # lint, typecheck, tests
+NUXT_TARGET_ROOT=$PWD/test/fixtures/mono pnpm dev         # pnpm monorepo
+NUXT_TARGET_ROOT=$PWD/test/fixtures/standalone pnpm dev   # single app with local layers/modules
+pnpm check    # lint, typecheck, tests
 ```

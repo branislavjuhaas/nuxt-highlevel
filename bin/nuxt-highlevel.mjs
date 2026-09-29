@@ -52,6 +52,11 @@ const main = defineCommand({
       description: "Preferred editor to open files in (e.g. code, cursor)",
     },
     open: { type: "boolean", description: "Open the browser (--no-open to skip)", default: true },
+    prepare: {
+      type: "boolean",
+      description: "Automatically run `nuxi prepare` on Nuxt projects where `.nuxt/` is missing.",
+      default: false,
+    },
   },
   async run({ args }) {
     const root = resolve(args.root);
@@ -70,6 +75,7 @@ const main = defineCommand({
       NUXT_PUBLIC_REPO_NAME: basename(root),
       NITRO_HOST: host,
       NITRO_PORT: String(port),
+      NUXT_PREPARE: String(args.prepare),
     });
     await import(pathToFileURL(serverEntry).href);
 

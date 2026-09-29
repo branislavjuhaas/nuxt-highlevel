@@ -11,7 +11,8 @@ export function targetRoot() {
 
 async function analyze(): Promise<GraphModel> {
   const root = targetRoot();
-  const prepareWarnings = await prepareApps(root);
+  const prepareWarnings =
+    String(useRuntimeConfig().nuxtPrepare).toLowerCase() === "true" ? await prepareApps(root) : [];
   const graph = analyzeRepo(root, useRuntimeConfig().public.repoName || undefined);
   graph.warnings.unshift(...prepareWarnings);
   return graph;

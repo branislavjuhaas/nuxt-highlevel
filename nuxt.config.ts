@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     // Repo to analyze, set by the CLI via NUXT_TARGET_ROOT. Empty means cwd.
     targetRoot: "",
     editor: "",
+    nuxtPrepare: "",
     public: {
       repoName: "",
     },
