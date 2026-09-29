@@ -74,6 +74,7 @@ const main = defineCommand({
   args: {
     root: { type: 'positional', description: 'Repo to analyze', default: '.', required: false },
     port: { type: 'string', description: 'Preferred port', default: '4777' },
+    editor: { type: 'string', description: 'Preferred editor to open files in (e.g. code, cursor)' },
     open: { type: 'boolean', description: 'Open the browser (--no-open to skip)', default: true },
     prepare: { type: 'boolean', description: 'Run `nuxi prepare` where .nuxt/ is missing', default: false }
   },
@@ -96,6 +97,7 @@ const main = defineCommand({
     const port = await getPort({ port: Number(args.port), portRange: [4777, 4877], host })
     Object.assign(process.env, {
       NUXT_TARGET_ROOT: root,
+      NUXT_EDITOR: args.editor ?? process.env.NUXT_EDITOR ?? '',
       NUXT_PUBLIC_REPO_NAME: basename(root),
       NITRO_HOST: host,
       NITRO_PORT: String(port)
