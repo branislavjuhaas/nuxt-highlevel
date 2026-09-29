@@ -32,11 +32,7 @@ const vertical = computed(() => props.data.direction === "DOWN");
           {{ node.label }}
         </div>
         <div class="truncate text-xs text-muted">
-          {{
-            data.ghost
-              ? `outside${data.context ? ` · in ${data.context}` : ""}`
-              : nodeSubtitle(node)
-          }}
+          {{ nodeSubtitle(node) }}
         </div>
       </div>
       <div class="flex shrink-0 flex-col items-end gap-1">

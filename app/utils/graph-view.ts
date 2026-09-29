@@ -13,8 +13,13 @@ export interface ViewNode {
   node: GraphNode;
   /** Outside the current level, shown because something inside connects to it. */
   ghost: boolean;
-  /** Package label for ghost areas and files, which are ambiguous on their own. */
-  context?: string;
+  /** For ghosts, the outside node they belong to, drawn as a labelled box around them. */
+  group?: ViewGroup;
+}
+
+export interface ViewGroup {
+  id: string;
+  label: string;
 }
 
 export interface ViewEdge {
@@ -63,6 +68,13 @@ export function buildView(index: GraphIndex, parentId: string): GraphView {
   const nodes = new Map<string, ViewNode>();
   for (const node of index.children.get(parentId) ?? []) nodes.set(node.id, { node, ghost: false });
 
+  const groups = new Map<string, ViewGroup>();
+  const groupOf = (id: string) => {
+    if (!groups.has(id))
+      groups.set(id, { id, label: `Elsewhere in ${index.nodes.get(id)!.label}` });
+    return groups.get(id)!;
+  };
+
   const place = (id: string): string | undefined => {
     const chain = index.chain(id);
     let common = 0;
@@ -72,11 +84,7 @@ export function buildView(index: GraphIndex, parentId: string): GraphView {
     const placed = chain[common];
     if (placed && common < parentChain.length && !nodes.has(placed)) {
       const node = index.nodes.get(placed)!;
-      const context =
-        node.kind === "area" || node.kind === "file"
-          ? index.nodes.get(chain[1]!)?.label
-          : undefined;
-      nodes.set(placed, { node, ghost: true, context });
+      nodes.set(placed, { node, ghost: true, group: groupOf(chain[common - 1]!) });
     }
     return placed;
   };
@@ -124,6 +132,14 @@ export function buildView(index: GraphIndex, parentId: string): GraphView {
   const connected = new Set([...edges.values()].flatMap((e) => [e.source, e.target]));
   for (const [id, view] of nodes) {
     if (view.ghost && !connected.has(id)) nodes.delete(id);
+  }
+  // Name the group by what's in it when that's one kind ("Other packages in standalone").
+  for (const group of groups.values()) {
+    const kinds = new Set(
+      [...nodes.values()].filter((n) => n.group === group).map((n) => n.node.kind),
+    );
+    if (kinds.size === 1)
+      group.label = `Other ${[...kinds][0]}s in ${index.nodes.get(group.id)!.label}`;
   }
   return { nodes: [...nodes.values()], edges: [...edges.values()] };
 }

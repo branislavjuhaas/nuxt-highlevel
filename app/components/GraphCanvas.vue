@@ -3,8 +3,8 @@ import { MarkerType, VueFlow, useVueFlow, type Edge, type Node } from "@vue-flow
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import { MiniMap } from "@vue-flow/minimap";
-import type { GraphView, ViewEdge } from "~/utils/graph-view";
-import type { LayoutDirection } from "~/composables/useElkLayout";
+import type { GraphView, ViewEdge, ViewNode } from "~/utils/graph-view";
+import type { LayoutDirection, LayoutResult } from "~/composables/useElkLayout";
 
 const props = defineProps<{
   view: GraphView;
@@ -27,6 +27,7 @@ const NODE_HEIGHT = 64;
 const nodeWidth = (label: string) => Math.min(320, Math.max(210, label.length * 8 + 130));
 
 const positions = shallowRef(new Map<string, { x: number; y: number }>());
+const boxes = shallowRef<LayoutResult["boxes"]>(new Map());
 const direction = ref<LayoutDirection>("RIGHT");
 const laidOut = ref(false);
 
@@ -46,6 +47,9 @@ function partition(view: GraphView["nodes"][number]) {
   return usesInside && !usedByInside ? 0 : 2;
 }
 
+/** Ghosts are boxed by the outside node they belong to, one box per side. */
+const boxOf = (view: ViewNode) => view.group && `box:${view.group.id}@${partition(view)}`;
+
 watchDebounced(
   [structure, () => size.width.value > 0],
   async () => {
@@ -57,12 +61,14 @@ watchDebounced(
           width: nodeWidth(n.node.label),
           height: NODE_HEIGHT,
           partition: partition(n),
+          box: boxOf(n),
         })),
         edges: props.view.edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
       },
       { width: size.width.value, height: size.height.value },
     );
     positions.value = result.positions;
+    boxes.value = result.boxes;
     direction.value = result.direction;
     laidOut.value = true;
     await nextTick();
@@ -74,20 +80,53 @@ watchDebounced(
   { debounce: 30, immediate: true },
 );
 
-const nodes = computed<Node[]>(() =>
-  props.view.nodes.map((view) => ({
-    id: view.node.id,
-    type: "graph",
-    position: positions.value.get(view.node.id) ?? { x: 0, y: 0 },
-    width: nodeWidth(view.node.label),
-    data: { ...view, direction: direction.value, selected: view.node.id === props.selectedId },
-  })),
-);
+// Boxes come first, Vue Flow wants parents before their children.
+const nodes = computed<Node[]>(() => {
+  const boxNodes = new Map<string, Node>();
+  for (const view of props.view.nodes) {
+    const id = boxOf(view);
+    const box = id && boxes.value.get(id);
+    if (!box || boxNodes.has(id)) continue;
+    boxNodes.set(id, {
+      id,
+      type: "box",
+      position: { x: box.x, y: box.y },
+      width: box.width,
+      height: box.height,
+      selectable: false,
+      draggable: false,
+      focusable: false,
+      data: { label: view.group!.label },
+    });
+  }
+  return [
+    ...boxNodes.values(),
+    ...props.view.nodes.map((view) => {
+      const box = boxOf(view);
+      return {
+        id: view.node.id,
+        type: "graph",
+        position: positions.value.get(view.node.id) ?? { x: 0, y: 0 },
+        width: nodeWidth(view.node.label),
+        parentNode: box && boxNodes.has(box) ? box : undefined,
+        data: { ...view, direction: direction.value, selected: view.node.id === props.selectedId },
+      };
+    }),
+  ];
+});
+
+/** Canvas position, boxed nodes are positioned relative to their box. */
+function absolute(id: string) {
+  const at = positions.value.get(id);
+  const view = props.view.nodes.find((n) => n.node.id === id);
+  const box = view && boxes.value.get(boxOf(view) ?? "");
+  return at && box ? { x: at.x + box.x, y: at.y + box.y } : at;
+}
 
 /** Points against the layout direction, i.e. ELK had to reverse it to break a cycle. */
 function isBackwards(edge: ViewEdge) {
-  const source = positions.value.get(edge.source);
-  const target = positions.value.get(edge.target);
+  const source = absolute(edge.source);
+  const target = absolute(edge.target);
   if (!source || !target) return false;
   return direction.value === "DOWN" ? target.y < source.y : target.x < source.x;
 }
@@ -130,13 +169,23 @@ const edges = computed<Edge[]>(() =>
       :min-zoom="0.1"
       :zoom-on-double-click="false"
       :class="{ invisible: !laidOut }"
-      @node-click="({ node }) => emit('select', node.id)"
-      @node-double-click="({ node }) => emit('activate', node.id)"
+      @node-click="({ node }) => (node.type === 'box' ? emit('clear') : emit('select', node.id))"
+      @node-double-click="({ node }) => node.type !== 'box' && emit('activate', node.id)"
       @edge-click="({ edge }) => emit('selectEdge', edge.data)"
       @pane-click="emit('clear')"
     >
       <template #node-graph="nodeProps">
         <GraphNodeCard :data="nodeProps.data" />
+      </template>
+      <template #node-box="boxProps">
+        <div
+          class="size-full rounded-xl border border-dashed border-accented bg-elevated/40"
+          :style="{ padding: `10px ${BOX_PADDING.side}px` }"
+        >
+          <div class="truncate text-xs font-medium text-muted">
+            {{ boxProps.data.label }}
+          </div>
+        </div>
       </template>
       <template #edge-graph="edgeProps">
         <GraphEdgeLine v-bind="edgeProps" @select="emit('selectEdge', edgeProps.data)" />

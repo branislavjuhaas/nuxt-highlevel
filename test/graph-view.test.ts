@@ -64,7 +64,7 @@ describe("buildView", () => {
     // pages/index.vue uses TreeNode: a ghost area from the same package
     const ghost = view.nodes.find((n) => n.ghost)!;
     expect(ghost.node.id).toBe(`${WEB}/area:pages`);
-    expect(ghost.context).toBe("web");
+    expect(ghost.group).toEqual({ id: WEB, label: "Other areas in web" });
   });
 });
 
