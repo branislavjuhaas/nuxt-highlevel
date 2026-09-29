@@ -1,0 +1,9 @@
+{
+  "name": "nuxt-foo",
+  "private": true,
+  "type": "module",
+  "keywords": ["nuxt-module"],
+  "exports": {
+    ".": "./src/module.ts"
+  }
+}

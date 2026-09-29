@@ -1,0 +1,62 @@
+{
+  "name": "nuxt-highlevel",
+  "description": "Architecture view of Nuxt (mono)repos: apps, layers, modules, packages, down to files",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "nuxt-highlevel": "./bin/nuxt-highlevel.mjs"
+  },
+  "files": [
+    "bin",
+    ".output"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "prepack": "nuxt build",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "check": "eslint . && nuxt typecheck && vitest run"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.137",
+    "@iconify-json/simple-icons": "^1.2.97",
+    "@nuxt/ui": "^4.11.2",
+    "@vue-flow/background": "^1.3.2",
+    "@vue-flow/controls": "^1.1.3",
+    "@vue-flow/core": "^1.48.2",
+    "@vue-flow/minimap": "^1.5.4",
+    "@vue/compiler-dom": "^3.5.43",
+    "@vueuse/core": "^15.0.0",
+    "@vueuse/nuxt": "^15.0.0",
+    "citty": "^0.2.2",
+    "confbox": "^0.3.1",
+    "elkjs": "^0.12.0",
+    "get-port-please": "^3.2.0",
+    "launch-editor": "^2.14.1",
+    "nuxt": "^4.5.2",
+    "oxc-parser": "^0.151.0",
+    "pathe": "^2.0.3",
+    "picomatch": "^4.0.7",
+    "pkg-types": "^2.3.3",
+    "tailwindcss": "^4.3.3",
+    "tinyglobby": "^0.2.17"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "@nuxt/kit": "^4.5.2",
+    "@types/picomatch": "^4.0.3",
+    "eslint": "^10.11.0",
+    "eslint-plugin-better-tailwindcss": "^4.7.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.2",
+    "vue-tsc": "^3.3.11"
+  },
+  "packageManager": "pnpm@12.6.0"
+}

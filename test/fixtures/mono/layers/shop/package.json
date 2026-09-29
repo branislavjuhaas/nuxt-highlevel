@@ -1,0 +1,10 @@
+{
+  "name": "@mono/shop",
+  "private": true,
+  "type": "module",
+  "main": "./nuxt.config.ts",
+  "dependencies": {
+    "@mono/base": "workspace:*",
+    "@mono/utils": "workspace:*"
+  }
+}

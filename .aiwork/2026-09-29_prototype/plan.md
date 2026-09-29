@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: agent-done
 references:
   - "Intent: ./intent.md"
   - "Use cases: ./source-note.md"

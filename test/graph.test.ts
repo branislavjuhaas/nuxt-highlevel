@@ -1,0 +1,87 @@
+import { describe, expect, it } from 'vitest'
+import { analyzeRepo, areaOf } from '../server/utils/analyzer/graph'
+import { fixtureRoot } from './fixture'
+
+const WEB = 'pkg:apps/web'
+
+describe('areaOf', () => {
+  it('strips the Nuxt srcDir and src/', () => {
+    expect(areaOf('app/components/cart/Badge.vue', true)).toEqual({ area: 'components', rest: 'cart/Badge.vue' })
+    expect(areaOf('app/app.vue', true)).toEqual({ area: 'app', rest: 'app.vue' })
+    expect(areaOf('server/api/hello.ts', true)).toEqual({ area: 'server', rest: 'api/hello.ts' })
+    expect(areaOf('src/format.ts', false)).toEqual({ area: 'src', rest: 'format.ts' })
+    expect(areaOf('module.ts', false)).toEqual({ area: 'root', rest: 'module.ts' })
+  })
+})
+
+describe('analyzeRepo', () => {
+  const model = analyzeRepo(fixtureRoot)
+  const has = (from: string, to: string, kind: string) =>
+    model.edges.some(e => e.from.endsWith(from) && e.to.endsWith(to) && e.kind === kind)
+
+  it('builds the hierarchy with short labels', () => {
+    const packages = model.nodes.filter(n => n.kind === 'package')
+    expect(packages.map(n => n.label).sort()).toEqual(['base', 'nuxt-foo', 'promo', 'shop', 'utils', 'web'])
+    const areas = model.nodes.filter(n => n.parent === WEB).map(n => n.label).sort()
+    expect(areas).toEqual(['app', 'components', 'composables', 'pages', 'server'])
+    const file = model.nodes.find(n => n.id === `${WEB}/area:components/file:TreeNode.vue`)!
+    expect(file.label).toBe('TreeNode.vue')
+    expect(file.path).toBe('apps/web/app/components/TreeNode.vue')
+    expect(model.warnings).toEqual([])
+  })
+
+  it('finds explicit and auto-import edges', () => {
+    expect(has('file:app.vue', 'file:AppHeader.vue', 'auto')).toBe(true)
+    expect(has('file:index.vue', 'file:ProductList.vue', 'auto')).toBe(true)
+    expect(has('file:index.vue', 'pkg:apps/web/layers/promo/area:components/file:PromoBanner.vue', 'auto')).toBe(true)
+    expect(has('file:index.vue', 'file:useCart.ts', 'auto')).toBe(true)
+    expect(has('file:index.vue', 'area:runtime/file:composables/useFoo.ts', 'auto')).toBe(true)
+    expect(has('file:index.vue', 'file:index.ts', 'import')).toBe(true)
+    expect(has('area:src/file:index.ts', 'file:format.ts', 'import')).toBe(true)
+    expect(has('file:api/hello.ts', 'file:utils/greet.ts', 'auto')).toBe(true)
+    // borrowed registry: layer files resolve through the app extending them
+    expect(has('file:ProductList.vue', 'file:useTheme.ts', 'auto')).toBe(true)
+    // `useState` comes from Nuxt itself, not from the repo
+    expect(model.edges.filter(e => e.kind === 'auto' && e.from.endsWith('CartBadge.vue'))).toEqual([])
+  })
+
+  it('keeps package-level edges', () => {
+    expect(has(WEB, 'pkg:layers/base', 'extends')).toBe(true)
+    expect(has(WEB, 'pkg:packages/nuxt-foo', 'module')).toBe(true)
+    expect(has(WEB, 'pkg:packages/utils', 'dependency')).toBe(true)
+  })
+
+  it('detects the component cycle', () => {
+    expect(model.cycles).toEqual([[`${WEB}/area:components/file:TreeBranch.vue`, `${WEB}/area:components/file:TreeNode.vue`]])
+    expect(model.nodes.find(n => n.id === WEB)!.inCycle).toBe(true)
+    expect(model.nodes.find(n => n.id === 'pkg:packages/utils')!.inCycle).toBe(false)
+  })
+
+  it('flags the base → feature violation', () => {
+    const violations = model.edges.filter(e => e.violation)
+    expect(violations).toEqual([expect.objectContaining({
+      from: 'pkg:layers/base/area:components/file:AppHeader.vue',
+      to: 'pkg:layers/shop/area:components/file:CartBadge.vue',
+      kind: 'auto',
+      violation: 'base must not depend on feature'
+    })])
+    expect(model.rulesSource).toBe('nuxt-highlevel.json')
+    expect(model.nodes.find(n => n.id === 'pkg:packages/nuxt-foo')!.tier).toBe('base')
+  })
+
+  it('computes metrics', () => {
+    const utils = model.nodes.find(n => n.id === 'pkg:packages/utils')!
+    expect(utils.files).toBe(3)
+    // only src/index.ts is used from outside
+    expect(utils.surface).toBe(1)
+    expect(utils.fanOut).toBe(0)
+    expect(utils.fanIn).toBe(2)
+  })
+})
+
+describe('analyzeRepo without .nuxt/', () => {
+  it('warns that auto-import edges are missing', () => {
+    const model = analyzeRepo(`${fixtureRoot}/apps/web/layers/promo`)
+    expect(model.warnings).toEqual([expect.stringContaining('no .nuxt/ found, auto-import edges are missing')])
+  })
+})

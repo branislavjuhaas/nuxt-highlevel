@@ -1,0 +1,11 @@
+{
+  "name": "@mono/web",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@mono/base": "workspace:*",
+    "@mono/shop": "workspace:*",
+    "@mono/utils": "workspace:*",
+    "nuxt-foo": "workspace:*"
+  }
+}

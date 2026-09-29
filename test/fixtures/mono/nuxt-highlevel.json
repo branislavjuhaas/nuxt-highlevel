@@ -1,0 +1,11 @@
+{
+  "tiers": {
+    "base": ["layers/base", "packages/utils", "nuxt-foo"],
+    "feature": ["layers/*"],
+    "app": ["apps/*"]
+  },
+  "rules": [
+    { "from": "base", "disallow": ["feature", "app"] },
+    { "from": "feature", "disallow": ["app"] }
+  ]
+}
