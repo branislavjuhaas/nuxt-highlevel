@@ -36,54 +36,53 @@ watch(target, async (value) => {
 </script>
 
 <template>
-  <UTooltip :text="target?.path">
-    <UModal
-      v-model:open="open"
-      :description="target?.names?.join(', ')"
-      :ui="{ content: 'max-w-5xl', body: 'p-0 sm:p-0' }"
-    >
-      <template #body>
-        <div v-if="error" class="p-4">
-          <UTooltip text="Could not load the file">
-            <UAlert color="error" icon="i-lucide-circle-x" :description="error" />
-          </UTooltip>
-        </div>
-        <div v-else-if="!html" class="flex h-40 items-center justify-center gap-2 text-muted">
-          <UIcon name="i-lucide-loader-circle" class="size-5 animate-spin" />
-          Loading…
-        </div>
-        <!-- eslint-disable vue/no-v-html -- shiki output of a local repo file -->
-        <div
-          v-else
-          ref="code"
-          class="code-view max-h-[70vh] overflow-auto py-3 font-mono text-xs leading-5"
-          v-html="html"
-        />
-        <!-- eslint-enable vue/no-v-html -->
-      </template>
-      <template #footer>
-        <div class="flex w-full flex-wrap items-center gap-1">
-          <template v-if="target && target.lines.length > 1">
-            <UButton
-              v-for="line in target.lines"
-              :key="line"
-              :label="`Line ${line}`"
-              color="neutral"
-              variant="ghost"
-              size="xs"
-              @click="scrollTo(line)"
-            />
-          </template>
+  <UModal
+    v-model:open="open"
+    :title="target?.path"
+    :description="target?.names?.join(', ')"
+    :ui="{ content: 'max-w-5xl', body: 'p-0 sm:p-0' }"
+  >
+    <template #body>
+      <div v-if="error" class="p-4">
+        <UTooltip text="Could not load the file">
+          <UAlert color="error" icon="i-lucide-circle-x" :description="error" />
+        </UTooltip>
+      </div>
+      <div v-else-if="!html" class="flex h-40 items-center justify-center gap-2 text-muted">
+        <UIcon name="i-lucide-loader-circle" class="size-5 animate-spin" />
+        Loading…
+      </div>
+      <!-- eslint-disable vue/no-v-html -- shiki output of a local repo file -->
+      <div
+        v-else
+        ref="code"
+        class="code-view max-h-[70vh] overflow-auto py-3 font-mono text-xs leading-5"
+        v-html="html"
+      />
+      <!-- eslint-enable vue/no-v-html -->
+    </template>
+    <template #footer>
+      <div class="flex w-full flex-wrap items-center gap-1">
+        <template v-if="target && target.lines.length > 1">
           <UButton
-            v-if="target"
-            label="Open in editor"
-            icon="i-lucide-square-pen"
-            size="sm"
-            class="ml-auto"
-            @click="openInEditor(target.path, target.lines[0])"
+            v-for="line in target.lines"
+            :key="line"
+            :label="`Line ${line}`"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            @click="scrollTo(line)"
           />
-        </div>
-      </template>
-    </UModal>
-  </UTooltip>
+        </template>
+        <UButton
+          v-if="target"
+          label="Open in editor"
+          icon="i-lucide-square-pen"
+          size="sm"
+          class="ml-auto"
+          @click="openInEditor(target.path, target.lines[0])"
+        />
+      </div>
+    </template>
+  </UModal>
 </template>
