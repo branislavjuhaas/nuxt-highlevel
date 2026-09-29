@@ -16,3 +16,30 @@
   --color-green-900: #0A5331;
   --color-green-950: #052E16;
 }
+
+/* Vue Flow's controls/minimap CSS hard-codes light colors; follow the UI theme instead. */
+.vue-flow .vue-flow__controls {
+  box-shadow: none;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  overflow: hidden;
+}
+
+.vue-flow .vue-flow__controls-button {
+  background: var(--ui-bg-elevated);
+  border-bottom-color: var(--ui-border);
+  color: var(--ui-text);
+  fill: currentColor;
+}
+
+.vue-flow .vue-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.vue-flow .vue-flow__controls-button:hover {
+  background: var(--ui-bg-accented);
+}
+
+.vue-flow .vue-flow__minimap {
+  background-color: var(--ui-bg-elevated);
+}
