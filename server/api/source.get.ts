@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 export default defineEventHandler(async (event) => {
   const { path, lines } = getQuery(event);
   const file = repoFile(path);
-  const highlight = String(lines ?? "")
+  const highlight = (typeof lines === "string" ? lines : "")
     .split(",")
     .map(Number)
     .filter(Number.isInteger);

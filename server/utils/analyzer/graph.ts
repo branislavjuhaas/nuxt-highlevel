@@ -51,7 +51,7 @@ export function areaOf(relInPkg: string, isNuxt: boolean): { area?: string; rest
 function fileLabel(rest: string) {
   const name = basename(rest);
   // `index.vue` alone says nothing, keep its folder.
-  if (/^index\./.test(name) && rest.includes("/")) return `${basename(dirname(rest))}/${name}`;
+  if (name.startsWith("index.") && rest.includes("/")) return `${basename(dirname(rest))}/${name}`;
   return name;
 }
 

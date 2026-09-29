@@ -46,9 +46,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const error = await new Promise<string | undefined>((done) => {
-    launchEditor(Number.isInteger(line) ? `${file}:${line}` : file, editor, (_file, message) => {
-      done(message ?? `Could not open '${path}' in editor '${editor}'.`);
-    });
+    launchEditor(
+      typeof line === "number" && Number.isInteger(line) ? `${file}:${line}` : file,
+      editor,
+      (_file, message) => {
+        done(message ?? `Could not open '${String(path)}' in editor '${editor}'.`);
+      },
+    );
     // launch-editor only reports failures, give it a moment before assuming success.
     setTimeout(() => done(undefined), 500);
   });
